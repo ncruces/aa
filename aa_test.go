@@ -4,6 +4,44 @@ import "testing"
 
 // https://web.archive.org/web/20181104022612/eternallyconfuzzled.com/tuts/datastructures/jsw_tut_andersson.aspx
 
+func TestKeyValueLevelLeftRight(t *testing.T) {
+	var aat *Tree[int, string]
+
+	if key := aat.Key(); key != 0 {
+		t.Error(key)
+	}
+	if value := aat.Value(); value != "" {
+		t.Error(value)
+	}
+	if lvl := aat.Level(); lvl != 0 {
+		t.Error(lvl)
+	}
+	if left := aat.Left(); left != nil {
+		t.Error(left)
+	}
+	if right := aat.Right(); right != nil {
+		t.Error(right)
+	}
+
+	aat = aat.Put(1, "one")
+
+	if key := aat.Key(); key != 1 {
+		t.Error(key)
+	}
+	if value := aat.Value(); value != "one" {
+		t.Error(value)
+	}
+	if lvl := aat.Level(); lvl != 1 {
+		t.Error(lvl)
+	}
+	if left := aat.Left(); left != nil {
+		t.Error(left)
+	}
+	if right := aat.Right(); right != nil {
+		t.Error(right)
+	}
+}
+
 func TestPutGetAll(t *testing.T) {
 	var aat *Tree[int, string]
 	aat = aat.Put(1, "one").Put(3, "three").Put(5, "five")
@@ -24,8 +62,8 @@ func TestPutGetAll(t *testing.T) {
 	}
 
 	var slice []int
-	aat.Put(0, "zero").All()(func(k int, _ string) bool {
-		slice = append(slice, k)
+	aat.Put(0, "zero").All()(func(t *Tree[int, string]) bool {
+		slice = append(slice, t.key)
 		return true
 	})
 
@@ -59,26 +97,26 @@ func TestTree_Add_inc(t *testing.T) {
 	//  0,1     2,1   4,1     6,1
 	aat = aat.Add(0).Add(1).Add(2).Add(3).Add(4).Add(5).Add(6)
 
-	if n := aat; n.key != 3 || n.level != 3 {
-		t.Fatalf("%d,%d", n.key, n.level)
+	if n := aat; n.key != 3 || n.Level() != 3 {
+		t.Fatalf("%d,%d", n.key, n.Level())
 	}
-	if n := aat.left; n.key != 1 || n.level != 2 {
-		t.Fatalf("%d,%d", n.key, n.level)
+	if n := aat.left; n.key != 1 || n.Level() != 2 {
+		t.Fatalf("%d,%d", n.key, n.Level())
 	}
-	if n := aat.right; n.key != 5 || n.level != 2 {
-		t.Fatalf("%d,%d", n.key, n.level)
+	if n := aat.right; n.key != 5 || n.Level() != 2 {
+		t.Fatalf("%d,%d", n.key, n.Level())
 	}
-	if n := aat.left.left; n.key != 0 || n.level != 1 {
-		t.Fatalf("%d,%d", n.key, n.level)
+	if n := aat.left.left; n.key != 0 || n.Level() != 1 {
+		t.Fatalf("%d,%d", n.key, n.Level())
 	}
-	if n := aat.left.right; n.key != 2 || n.level != 1 {
-		t.Fatalf("%d,%d", n.key, n.level)
+	if n := aat.left.right; n.key != 2 || n.Level() != 1 {
+		t.Fatalf("%d,%d", n.key, n.Level())
 	}
-	if n := aat.right.left; n.key != 4 || n.level != 1 {
-		t.Fatalf("%d,%d", n.key, n.level)
+	if n := aat.right.left; n.key != 4 || n.Level() != 1 {
+		t.Fatalf("%d,%d", n.key, n.Level())
 	}
-	if n := aat.right.right; n.key != 6 || n.level != 1 {
-		t.Fatalf("%d,%d", n.key, n.level)
+	if n := aat.right.right; n.key != 6 || n.Level() != 1 {
+		t.Fatalf("%d,%d", n.key, n.Level())
 	}
 }
 
@@ -91,20 +129,20 @@ func TestTree_Add_dec(t *testing.T) {
 	//      4,1     6,1
 	aat = aat.Add(6).Add(5).Add(4).Add(3).Add(2)
 
-	if n := aat; n.key != 3 || n.level != 2 {
-		t.Fatalf("%d,%d", n.key, n.level)
+	if n := aat; n.key != 3 || n.Level() != 2 {
+		t.Fatalf("%d,%d", n.key, n.Level())
 	}
-	if n := aat.left; n.key != 2 || n.level != 1 {
-		t.Fatalf("%d,%d", n.key, n.level)
+	if n := aat.left; n.key != 2 || n.Level() != 1 {
+		t.Fatalf("%d,%d", n.key, n.Level())
 	}
-	if n := aat.right; n.key != 5 || n.level != 2 {
-		t.Fatalf("%d,%d", n.key, n.level)
+	if n := aat.right; n.key != 5 || n.Level() != 2 {
+		t.Fatalf("%d,%d", n.key, n.Level())
 	}
-	if n := aat.right.left; n.key != 4 || n.level != 1 {
-		t.Fatalf("%d,%d", n.key, n.level)
+	if n := aat.right.left; n.key != 4 || n.Level() != 1 {
+		t.Fatalf("%d,%d", n.key, n.Level())
 	}
-	if n := aat.right.right; n.key != 6 || n.level != 1 {
-		t.Fatalf("%d,%d", n.key, n.level)
+	if n := aat.right.right; n.key != 6 || n.Level() != 1 {
+		t.Fatalf("%d,%d", n.key, n.Level())
 	}
 }
 
@@ -135,17 +173,17 @@ func TestTree_Delete(t *testing.T) {
 	//              6,1
 	aat = aat.Delete(0).Delete(3).Delete(1)
 
-	if n := aat; n.key != 4 || n.level != 2 {
-		t.Fatalf("%d,%d", n.key, n.level)
+	if n := aat; n.key != 4 || n.Level() != 2 {
+		t.Fatalf("%d,%d", n.key, n.Level())
 	}
-	if n := aat.left; n.key != 2 || n.level != 1 {
-		t.Fatalf("%d,%d", n.key, n.level)
+	if n := aat.left; n.key != 2 || n.Level() != 1 {
+		t.Fatalf("%d,%d", n.key, n.Level())
 	}
-	if n := aat.right; n.key != 5 || n.level != 1 {
-		t.Fatalf("%d,%d", n.key, n.level)
+	if n := aat.right; n.key != 5 || n.Level() != 1 {
+		t.Fatalf("%d,%d", n.key, n.Level())
 	}
-	if n := aat.right.right; n.key != 6 || n.level != 1 {
-		t.Fatalf("%d,%d", n.key, n.level)
+	if n := aat.right.right; n.key != 6 || n.Level() != 1 {
+		t.Fatalf("%d,%d", n.key, n.Level())
 	}
 
 	if a, b := aat, aat.Delete(-1); a != b {
@@ -230,8 +268,7 @@ func TestTree_split(t *testing.T) {
 			left: &Tree[string, struct{}]{
 				key: "c", level: 1},
 			right: &Tree[string, struct{}]{
-				key: "e", level: 2}},
-	}
+				key: "e", level: 2}}}
 
 	out := in.split()
 	if n := out; n.key != "d" || n.level != 3 {

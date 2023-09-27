@@ -1,5 +1,8 @@
+// Package aa implements immutable AA trees.
 package aa
 
+// Tree is an immutable AA tree,
+// a form of self-balancing binary search tree.
 type Tree[K ordered, V any] struct {
 	left  *Tree[K, V]
 	right *Tree[K, V]
@@ -8,6 +11,59 @@ type Tree[K ordered, V any] struct {
 	level int
 }
 
+// Key returns the key at the root of this tree.
+func (tree *Tree[K, V]) Key() K {
+	if tree == nil {
+		var key K
+		return key
+	}
+	return tree.key
+}
+
+// Value returns the value at the root of this tree.
+func (tree *Tree[K, V]) Value() V {
+	if tree == nil {
+		var value V
+		return value
+	}
+	return tree.value
+}
+
+// Left returns the left subtree of this tree,
+// containing all keys less than Key().
+func (tree *Tree[K, V]) Left() *Tree[K, V] {
+	if tree == nil {
+		return nil
+	}
+	return tree.left
+}
+
+// Right returns the right subtree of this tree,
+// containing all keys greater than Key().
+func (tree *Tree[K, V]) Right() *Tree[K, V] {
+	if tree == nil {
+		return nil
+	}
+	return tree.right
+}
+
+// Level returns the level of this AA tree.
+// The number of nodes in a tree of level:
+//
+//	1 is between 1 and 2
+//	2 is between 3 and 8
+//	3 is between 7 and 26
+//	4 is between 15 and 80
+//	n is between 2ⁿ-1 and 3ⁿ-1
+func (tree *Tree[K, V]) Level() int {
+	if tree == nil {
+		return 0
+	}
+	return tree.level
+}
+
+// Get retrieves the value for a given key;
+// found indicates whether key exists in this tree.
 func (tree *Tree[K, V]) Get(key K) (value V, found bool) {
 	for tree != nil {
 		switch {
@@ -22,24 +78,27 @@ func (tree *Tree[K, V]) Get(key K) (value V, found bool) {
 	return // zero, false
 }
 
+// Contains reports whether key exists in this tree.
 func (tree *Tree[K, V]) Contains(key K) bool {
 	_, found := tree.Get(key)
 	return found
 }
 
-func (tree *Tree[K, V]) All() func(yield func(K, V) bool) {
-	return func(yield func(K, V) bool) { tree.all_r(yield) }
+// All returns an in-order iterator for this tree.
+func (tree *Tree[K, V]) All() func(yield func(*Tree[K, V]) bool) {
+	return func(yield func(*Tree[K, V]) bool) { tree.pull(yield) }
 }
 
-func (tree *Tree[K, V]) all_r(yield func(K, V) bool) bool {
+func (tree *Tree[K, V]) pull(yield func(*Tree[K, V]) bool) bool {
 	if tree == nil {
 		return true
 	}
-	return tree.left.all_r(yield) &&
-		yield(tree.key, tree.value) &&
-		tree.right.all_r(yield)
+	return tree.left.pull(yield) && yield(tree) && tree.right.pull(yield)
 }
 
+// Put returns a modified tree with key set to value.
+//
+//	tree.Put(key, value).Get(key) ⟹ (value, true)
 func (tree *Tree[K, V]) Put(key K, value V) *Tree[K, V] {
 	if tree == nil {
 		return &Tree[K, V]{key: key, value: value, level: 1}
@@ -58,6 +117,9 @@ func (tree *Tree[K, V]) Put(key K, value V) *Tree[K, V] {
 	return copy.ins_rebalance()
 }
 
+// Add returns a modified tree that contains key.
+//
+//	tree.Add(key).Contains(key) ⟹ true
 func (tree *Tree[K, V]) Add(key K) *Tree[K, V] {
 	if tree == nil {
 		return &Tree[K, V]{key: key, level: 1}
@@ -81,6 +143,9 @@ func (tree *Tree[K, V]) Add(key K) *Tree[K, V] {
 	return copy.ins_rebalance()
 }
 
+// Delete returns a modified tree with key removed from it.
+//
+//	tree.Delete(key).Contains(key) ⟹ false
 func (tree *Tree[K, V]) Delete(key K) *Tree[K, V] {
 	if tree == nil {
 		return nil
