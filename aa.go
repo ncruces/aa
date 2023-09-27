@@ -3,6 +3,9 @@ package aa
 
 // Tree is an immutable AA tree,
 // a form of self-balancing binary search tree.
+//
+// Use nil for an empty *Tree.
+// The zero value for Tree is a tree with a single zero key/value pair.
 type Tree[K ordered, V any] struct {
 	left  *Tree[K, V]
 	right *Tree[K, V]
@@ -59,7 +62,7 @@ func (tree *Tree[K, V]) Level() int {
 	if tree == nil {
 		return 0
 	}
-	return tree.level
+	return tree.level + 1
 }
 
 // Get retrieves the value for a given key;
@@ -101,7 +104,7 @@ func (tree *Tree[K, V]) pull(yield func(*Tree[K, V]) bool) bool {
 //	tree.Put(key, value).Get(key) ⟹ (value, true)
 func (tree *Tree[K, V]) Put(key K, value V) *Tree[K, V] {
 	if tree == nil {
-		return &Tree[K, V]{key: key, value: value, level: 1}
+		return &Tree[K, V]{key: key, value: value}
 	}
 
 	copy := *tree
@@ -122,7 +125,7 @@ func (tree *Tree[K, V]) Put(key K, value V) *Tree[K, V] {
 //	tree.Add(key).Contains(key) ⟹ true
 func (tree *Tree[K, V]) Add(key K) *Tree[K, V] {
 	if tree == nil {
-		return &Tree[K, V]{key: key, level: 1}
+		return &Tree[K, V]{key: key}
 	}
 
 	copy := *tree
@@ -188,9 +191,7 @@ func (tree Tree[K, V]) ins_rebalance() *Tree[K, V] {
 
 func (tree Tree[K, V]) del_rebalance() *Tree[K, V] {
 	var want int
-	if tree.left == nil || tree.right == nil {
-		want = 1
-	} else {
+	if tree.left != nil && tree.right != nil {
 		want = 1 + min(tree.left.level, tree.right.level)
 	}
 	if tree.level > want {

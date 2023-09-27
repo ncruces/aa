@@ -213,32 +213,28 @@ func TestTree_skew(t *testing.T) {
 	//     /   \                     /   \
 	//  a,1     c,1               c,1     e,1
 
-	in := &Tree[string, struct{}]{
-		key: "d", level: 2,
-		left: &Tree[string, struct{}]{
-			key: "b", level: 2,
-			left: &Tree[string, struct{}]{
-				key: "a", level: 1},
-			right: &Tree[string, struct{}]{
-				key: "c", level: 1}},
-		right: &Tree[string, struct{}]{
-			key: "e", level: 1}}
+	in :=
+		node("d", 2,
+			node("b", 2,
+				node("a", 1),
+				node("c", 1)),
+			node("e", 1))
 
 	out := in.skew()
-	if n := out; n.key != "b" || n.level != 2 {
-		t.Fatalf("%s,%d", n.key, n.level)
+	if n := out; n.key != "b" || n.Level() != 2 {
+		t.Fatalf("%s,%d", n.key, n.Level())
 	}
-	if n := out.left; n.key != "a" || n.level != 1 {
-		t.Fatalf("%s,%d", n.key, n.level)
+	if n := out.left; n.key != "a" || n.Level() != 1 {
+		t.Fatalf("%s,%d", n.key, n.Level())
 	}
-	if n := out.right; n.key != "d" || n.level != 2 {
-		t.Fatalf("%s,%d", n.key, n.level)
+	if n := out.right; n.key != "d" || n.Level() != 2 {
+		t.Fatalf("%s,%d", n.key, n.Level())
 	}
-	if n := out.right.left; n.key != "c" || n.level != 1 {
-		t.Fatalf("%s,%d", n.key, n.level)
+	if n := out.right.left; n.key != "c" || n.Level() != 1 {
+		t.Fatalf("%s,%d", n.key, n.Level())
 	}
-	if n := out.right.right; n.key != "e" || n.level != 1 {
-		t.Fatalf("%s,%d", n.key, n.level)
+	if n := out.right.right; n.key != "e" || n.Level() != 1 {
+		t.Fatalf("%s,%d", n.key, n.Level())
 	}
 	if a, b := in.left.left, out.left; a != b {
 		t.Fatalf("%p ≠ %p", a, b)
@@ -258,33 +254,28 @@ func TestTree_split(t *testing.T) {
 	//         /   \           /   \
 	//      c,1     e,2     a,1     c,1
 
-	in := &Tree[string, struct{}]{
-		key: "b", level: 2,
-		left: &Tree[string, struct{}]{
-			key: "a", level: 1,
-		},
-		right: &Tree[string, struct{}]{
-			key: "d", level: 2,
-			left: &Tree[string, struct{}]{
-				key: "c", level: 1},
-			right: &Tree[string, struct{}]{
-				key: "e", level: 2}}}
+	in :=
+		node("b", 2,
+			node("a", 1),
+			node("d", 2,
+				node("c", 1),
+				node("e", 2)))
 
 	out := in.split()
-	if n := out; n.key != "d" || n.level != 3 {
-		t.Fatalf("%s,%d", n.key, n.level)
+	if n := out; n.key != "d" || n.Level() != 3 {
+		t.Fatalf("%s,%d", n.key, n.Level())
 	}
-	if n := out.left; n.key != "b" || n.level != 2 {
-		t.Fatalf("%s,%d", n.key, n.level)
+	if n := out.left; n.key != "b" || n.Level() != 2 {
+		t.Fatalf("%s,%d", n.key, n.Level())
 	}
-	if n := out.left.left; n.key != "a" || n.level != 1 {
-		t.Fatalf("%s,%d", n.key, n.level)
+	if n := out.left.left; n.key != "a" || n.Level() != 1 {
+		t.Fatalf("%s,%d", n.key, n.Level())
 	}
-	if n := out.left.right; n.key != "c" || n.level != 1 {
-		t.Fatalf("%s,%d", n.key, n.level)
+	if n := out.left.right; n.key != "c" || n.Level() != 1 {
+		t.Fatalf("%s,%d", n.key, n.Level())
 	}
-	if n := out.right; n.key != "e" || n.level != 2 {
-		t.Fatalf("%s,%d", n.key, n.level)
+	if n := out.right; n.key != "e" || n.Level() != 2 {
+		t.Fatalf("%s,%d", n.key, n.Level())
 	}
 	if a, b := in.left, out.left.left; a != b {
 		t.Fatalf("%p ≠ %p", a, b)
@@ -304,16 +295,14 @@ func TestTree_ins_rebalance(t *testing.T) {
 	//                        \
 	//                         6,1
 
-	in := &Tree[int, struct{}]{
-		key: 5, level: 1,
-		left: &Tree[int, struct{}]{
-			key: 4, level: 1},
-		right: &Tree[int, struct{}]{
-			key: 6, level: 1}}
+	in :=
+		node(5, 1,
+			node(4, 1),
+			node(6, 1))
 
 	out := in.ins_rebalance()
-	if n := out; n.key != 5 || n.level != 2 {
-		t.Fatalf("%d,%d", n.key, n.level)
+	if n := out; n.key != 5 || n.Level() != 2 {
+		t.Fatalf("%d,%d", n.key, n.Level())
 	}
 	if a, b := in.left, out.left; a != b {
 		t.Fatalf("%p ≠ %p", a, b)
@@ -332,37 +321,35 @@ func TestTree_del_rebalance(t *testing.T) {
 	//     \       \                      \
 	//      4,1     7,1                    7,1
 
-	in := &Tree[int, struct{}]{
-		key: 2, level: 2,
-		right: &Tree[int, struct{}]{
-			key: 5, level: 2,
-			left: &Tree[int, struct{}]{
-				key: 3, level: 1,
-				right: &Tree[int, struct{}]{
-					key: 4, level: 1}},
-			right: &Tree[int, struct{}]{
-				key: 6, level: 1,
-				right: &Tree[int, struct{}]{
-					key: 7, level: 1}}}}
+	in :=
+		node(2, 2,
+			nil,
+			node(5, 2,
+				node(3, 1,
+					nil,
+					node(4, 1)),
+				node(6, 1,
+					nil,
+					node(7, 1))))
 
 	out := in.del_rebalance()
-	if n := out; n.key != 3 || n.level != 2 {
-		t.Fatalf("%d,%d", n.key, n.level)
+	if n := out; n.key != 3 || n.Level() != 2 {
+		t.Fatalf("%d,%d", n.key, n.Level())
 	}
-	if n := out.left; n.key != 2 || n.level != 1 {
-		t.Fatalf("%d,%d", n.key, n.level)
+	if n := out.left; n.key != 2 || n.Level() != 1 {
+		t.Fatalf("%d,%d", n.key, n.Level())
 	}
-	if n := out.right; n.key != 5 || n.level != 2 {
-		t.Fatalf("%d,%d", n.key, n.level)
+	if n := out.right; n.key != 5 || n.Level() != 2 {
+		t.Fatalf("%d,%d", n.key, n.Level())
 	}
-	if n := out.right.left; n.key != 4 || n.level != 1 {
-		t.Fatalf("%d,%d", n.key, n.level)
+	if n := out.right.left; n.key != 4 || n.Level() != 1 {
+		t.Fatalf("%d,%d", n.key, n.Level())
 	}
-	if n := out.right.right; n.key != 6 || n.level != 1 {
-		t.Fatalf("%d,%d", n.key, n.level)
+	if n := out.right.right; n.key != 6 || n.Level() != 1 {
+		t.Fatalf("%d,%d", n.key, n.Level())
 	}
-	if n := out.right.right.right; n.key != 7 || n.level != 1 {
-		t.Fatalf("%d,%d", n.key, n.level)
+	if n := out.right.right.right; n.key != 7 || n.Level() != 1 {
+		t.Fatalf("%d,%d", n.key, n.Level())
 	}
 }
 
