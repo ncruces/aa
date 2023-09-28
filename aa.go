@@ -4,8 +4,13 @@ package aa
 // Tree is an immutable AA tree,
 // a form of self-balancing binary search tree.
 //
-// Use nil for an empty *Tree.
-// The zero value for Tree is a tree with a single zero key/value pair.
+// Use *Tree as reference type; the zero value for *Tree (nil) is the empty tree:
+//
+//	var empty *aa.Tree[int, string]
+//	one := empty.Put(1, "one")
+//	one.Contains(1) ⟹ true
+//
+// Note: the zero value for Tree (Tree{}) is a valid, but non-empty, tree; avoid.
 type Tree[K ordered, V any] struct {
 	left  *Tree[K, V]
 	right *Tree[K, V]
@@ -15,25 +20,25 @@ type Tree[K ordered, V any] struct {
 }
 
 // Key returns the key at the root of this tree.
+//
+// Note: getting the root key of an empty tree (nil)
+// causes a runtime panic.
 func (tree *Tree[K, V]) Key() K {
-	if tree == nil {
-		var key K
-		return key
-	}
 	return tree.key
 }
 
 // Value returns the value at the root of this tree.
+//
+// Note: getting the root value of an empty tree (nil)
+// causes a runtime panic.
 func (tree *Tree[K, V]) Value() V {
-	if tree == nil {
-		var value V
-		return value
-	}
 	return tree.value
 }
 
 // Left returns the left subtree of this tree,
-// containing all keys less than Key().
+// containing all keys less than its root key.
+//
+// Note: the left subtree of the empty tree is the empty tree (nil).
 func (tree *Tree[K, V]) Left() *Tree[K, V] {
 	if tree == nil {
 		return nil
@@ -42,7 +47,9 @@ func (tree *Tree[K, V]) Left() *Tree[K, V] {
 }
 
 // Right returns the right subtree of this tree,
-// containing all keys greater than Key().
+// containing all keys greater than its root key.
+//
+// Note: the right subtree of the empty tree is the empty tree (nil).
 func (tree *Tree[K, V]) Right() *Tree[K, V] {
 	if tree == nil {
 		return nil
@@ -51,13 +58,11 @@ func (tree *Tree[K, V]) Right() *Tree[K, V] {
 }
 
 // Level returns the level of this AA tree.
-// The number of nodes in a tree of level:
 //
-//	1 is between 1 and 2
-//	2 is between 3 and 8
-//	3 is between 7 and 26
-//	4 is between 15 and 80
-//	n is between 2ⁿ-1 and 3ⁿ-1
+// Notes:
+//   - the level of the empty tree (nil) is 0.
+//   - the height of a tree of level n is between n and 2·n.
+//   - the number of nodes in a tree of level n is between 2ⁿ-1 and 3ⁿ-1.
 func (tree *Tree[K, V]) Level() int {
 	if tree == nil {
 		return 0
@@ -88,6 +93,11 @@ func (tree *Tree[K, V]) Contains(key K) bool {
 }
 
 // All returns an in-order iterator for this tree.
+//
+//	tree.All()(func(t *aa.Tree[int, any]) bool {
+//		fmt.Println(t.Key(), t.Value())
+//		return true
+//	})
 func (tree *Tree[K, V]) All() func(yield func(*Tree[K, V]) bool) {
 	return func(yield func(*Tree[K, V]) bool) { tree.pull(yield) }
 }
@@ -103,42 +113,48 @@ func (tree *Tree[K, V]) pull(yield func(*Tree[K, V]) bool) bool {
 //
 //	tree.Put(key, value).Get(key) ⟹ (value, true)
 func (tree *Tree[K, V]) Put(key K, value V) *Tree[K, V] {
-	if tree == nil {
-		return &Tree[K, V]{key: key, value: value}
-	}
-
-	copy := *tree
-	switch {
-	default:
-		copy.value = value
-		return &copy
-	case less(key, tree.key):
-		copy.left = tree.left.Put(key, value)
-	case less(tree.key, key):
-		copy.right = tree.right.Put(key, value)
-	}
-	return copy.ins_rebalance()
+	return tree.Patch(key, func(*Tree[K, V]) (V, bool) {
+		return value, true
+	})
 }
 
-// Add returns a modified tree that contains key.
+// Add returns a (possibly) modified tree that contains key.
 //
 //	tree.Add(key).Contains(key) ⟹ true
 func (tree *Tree[K, V]) Add(key K) *Tree[K, V] {
+	return tree.Patch(key, func(node *Tree[K, V]) (value V, ok bool) {
+		return value, node == nil
+	})
+}
+
+// Patch looks for key in this tree, calls update with the node for that key
+// (or nil, if key is not found), and returns a possibly modified tree.
+//
+// The update callback can opt to set/update the value for the key,
+// by returning (value, true), or not, by returning false.
+func (tree *Tree[K, V]) Patch(key K, update func(node *Tree[K, V]) (value V, ok bool)) *Tree[K, V] {
 	if tree == nil {
-		return &Tree[K, V]{key: key}
+		if value, ok := update(tree); ok {
+			return &Tree[K, V]{key: key, value: value}
+		}
+		return nil
 	}
 
 	copy := *tree
 	switch {
 	default:
+		if value, ok := update(tree); ok {
+			copy.value = value
+			return &copy
+		}
 		return tree
 	case less(key, tree.key):
-		copy.left = tree.left.Add(key)
+		copy.left = tree.left.Patch(key, update)
 		if copy.left == tree.left {
 			return tree
 		}
 	case less(tree.key, key):
-		copy.right = tree.right.Add(key)
+		copy.right = tree.right.Patch(key, update)
 		if copy.right == tree.right {
 			return tree
 		}

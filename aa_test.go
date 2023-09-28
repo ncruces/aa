@@ -1,18 +1,15 @@
 package aa
 
-import "testing"
+import (
+	"strings"
+	"testing"
+)
 
 // https://web.archive.org/web/20181104022612/eternallyconfuzzled.com/tuts/datastructures/jsw_tut_andersson.aspx
 
 func TestKeyValueLevelLeftRight(t *testing.T) {
 	var aat *Tree[int, string]
 
-	if key := aat.Key(); key != 0 {
-		t.Error(key)
-	}
-	if value := aat.Value(); value != "" {
-		t.Error(value)
-	}
 	if lvl := aat.Level(); lvl != 0 {
 		t.Error(lvl)
 	}
@@ -75,7 +72,7 @@ func TestPutGetAll(t *testing.T) {
 }
 
 func TestAddContainsDelete(t *testing.T) {
-	var aat *Tree[int, string]
+	var aat *Tree[int, struct{}]
 
 	aat = aat.Add(1).Add(3).Add(5)
 	if ok := aat.Contains(3); !ok {
@@ -85,6 +82,27 @@ func TestAddContainsDelete(t *testing.T) {
 	aat = aat.Delete(3)
 	if ok := aat.Contains(3); ok {
 		t.Error()
+	}
+}
+
+func TestAddPatchGet(t *testing.T) {
+	var aat *Tree[int, string]
+
+	upper := func(n *Tree[int, string]) (string, bool) {
+		if n != nil {
+			return strings.ToUpper(n.Value()), true
+		}
+		return "", false
+	}
+
+	aat = aat.Put(1, "one").Put(3, "three").Put(5, "five")
+	aat = aat.Patch(0, upper).Patch(3, upper)
+
+	if s, ok := aat.Get(0); ok {
+		t.Error(s, ok)
+	}
+	if s, ok := aat.Get(3); !ok || s != "THREE" {
+		t.Error(s, ok)
 	}
 }
 
