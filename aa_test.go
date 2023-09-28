@@ -59,8 +59,8 @@ func TestPutGetAll(t *testing.T) {
 	}
 
 	var slice []int
-	aat.Put(0, "zero").All()(func(t *Tree[int, string]) bool {
-		slice = append(slice, t.key)
+	aat.Put(0, "zero").All()(func(n *Tree[int, string]) bool {
+		slice = append(slice, n.key)
 		return true
 	})
 

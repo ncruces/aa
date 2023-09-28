@@ -10,7 +10,7 @@ package aa
 //	one := empty.Put(1, "one")
 //	one.Contains(1) ⟹ true
 //
-// Note: the zero value for Tree (Tree{}) is a valid, but non-empty, tree; avoid.
+// Note: the zero value for Tree{} is a valid, but non-empty, tree.
 type Tree[K ordered, V any] struct {
 	left  *Tree[K, V]
 	right *Tree[K, V]
@@ -73,15 +73,20 @@ func (tree *Tree[K, V]) Level() int {
 // Get retrieves the value for a given key;
 // found indicates whether key exists in this tree.
 func (tree *Tree[K, V]) Get(key K) (value V, found bool) {
+	// For strings, 2-way search is faster:
+	//   https://go.dev/issue/61725
+	//   https://user.it.uu.se/~arnea/ps/searchproc.pdf
+	var node *Tree[K, V]
 	for tree != nil {
-		switch {
-		default:
-			return tree.value, true
-		case less(key, tree.key):
+		if less(key, tree.key) {
 			tree = tree.left
-		case less(tree.key, key):
+		} else {
+			node = tree
 			tree = tree.right
 		}
+	}
+	if node != nil && node.key == key {
+		return node.value, true
 	}
 	return // zero, false
 }
@@ -94,11 +99,11 @@ func (tree *Tree[K, V]) Contains(key K) bool {
 
 // All returns an in-order iterator for this tree.
 //
-//	tree.All()(func(t *aa.Tree[int, any]) bool {
-//		fmt.Println(t.Key(), t.Value())
+//	tree.All()(func(node *aa.Tree[int, any]) bool {
+//		fmt.Println(node.Key(), t.Value())
 //		return true
 //	})
-func (tree *Tree[K, V]) All() func(yield func(*Tree[K, V]) bool) {
+func (tree *Tree[K, V]) All() func(yield func(node *Tree[K, V]) bool) {
 	return func(yield func(*Tree[K, V]) bool) { tree.pull(yield) }
 }
 
@@ -198,7 +203,7 @@ func (tree *Tree[K, V]) Delete(key K) *Tree[K, V] {
 }
 
 func (tree Tree[K, V]) ins_rebalance() *Tree[K, V] {
-	if tree.need_raise() {
+	if tree.need_raise() { // avoid 2 rotations and allocs
 		tree.level++
 		return &tree
 	}
