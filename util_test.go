@@ -1,5 +1,7 @@
 package aa
 
+import "cmp"
+
 func (tree *Tree[K, V]) check() {
 	if tree == nil {
 		return
@@ -25,7 +27,7 @@ func (tree *Tree[K, V]) check() {
 	tree.Right().check()
 }
 
-func node[K ordered](key K, level int, children ...*Tree[K, struct{}]) *Tree[K, struct{}] {
+func node[K cmp.Ordered](key K, level int, children ...*Tree[K, struct{}]) *Tree[K, struct{}] {
 	if children == nil {
 		return &Tree[K, struct{}]{key: key, level: level - 1}
 	}

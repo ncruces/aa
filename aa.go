@@ -1,6 +1,8 @@
 // Package aa implements immutable AA trees.
 package aa
 
+import "cmp"
+
 // Tree is an immutable AA tree,
 // a form of self-balancing binary search tree.
 //
@@ -11,7 +13,7 @@ package aa
 //	one.Contains(1) ⟹ true
 //
 // Note: the zero value for Tree{} is a valid, but non-empty, tree.
-type Tree[K ordered, V any] struct {
+type Tree[K cmp.Ordered, V any] struct {
 	left  *Tree[K, V]
 	right *Tree[K, V]
 	key   K
@@ -78,7 +80,7 @@ func (tree *Tree[K, V]) Get(key K) (value V, found bool) {
 	//   https://user.it.uu.se/~arnea/ps/searchproc.pdf
 	var node *Tree[K, V]
 	for tree != nil {
-		if less(key, tree.key) {
+		if cmp.Less(key, tree.key) {
 			tree = tree.left
 		} else {
 			node = tree
@@ -153,12 +155,12 @@ func (tree *Tree[K, V]) Patch(key K, update func(node *Tree[K, V]) (value V, ok 
 			return &copy
 		}
 		return tree
-	case less(key, tree.key):
+	case cmp.Less(key, tree.key):
 		copy.left = tree.left.Patch(key, update)
 		if copy.left == tree.left {
 			return tree
 		}
-	case less(tree.key, key):
+	case cmp.Less(tree.key, key):
 		copy.right = tree.right.Patch(key, update)
 		if copy.right == tree.right {
 			return tree
@@ -177,12 +179,12 @@ func (tree *Tree[K, V]) Delete(key K) *Tree[K, V] {
 
 	copy := *tree
 	switch {
-	case less(key, tree.key):
+	case cmp.Less(key, tree.key):
 		copy.left = tree.left.Delete(key)
 		if copy.left == tree.left {
 			return tree
 		}
-	case less(tree.key, key):
+	case cmp.Less(tree.key, key):
 		copy.right = tree.right.Delete(key)
 		if copy.right == tree.right {
 			return tree
