@@ -99,16 +99,6 @@ func (tree *Tree[K, V]) Contains(key K) bool {
 	return found
 }
 
-// All returns an in-order iterator for this tree.
-//
-//	tree.All()(func(node *aa.Tree[int, any]) bool {
-//		fmt.Println(node.Key(), t.Value())
-//		return true
-//	})
-func (tree *Tree[K, V]) All() func(yield func(node *Tree[K, V]) bool) {
-	return func(yield func(*Tree[K, V]) bool) { tree.pull(yield) }
-}
-
 func (tree *Tree[K, V]) pull(yield func(*Tree[K, V]) bool) bool {
 	if tree == nil {
 		return true
