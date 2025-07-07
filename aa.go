@@ -1,7 +1,10 @@
 // Package aa implements immutable AA trees.
 package aa
 
-import "cmp"
+import (
+	"cmp"
+	"iter"
+)
 
 // Tree is an immutable AA tree,
 // a form of self-balancing binary search tree.
@@ -76,7 +79,7 @@ func (tree *Tree[K, V]) Level() int {
 // found indicates whether key exists in this tree.
 func (tree *Tree[K, V]) Get(key K) (value V, found bool) {
 	// For strings, 2-way search is faster:
-	//   https://go.dev/issue/61725
+	//   https://go.dev/issue/71270
 	//   https://user.it.uu.se/~arnea/ps/searchproc.pdf
 	var node *Tree[K, V]
 	for tree != nil {
@@ -87,7 +90,7 @@ func (tree *Tree[K, V]) Get(key K) (value V, found bool) {
 			tree = tree.right
 		}
 	}
-	if node != nil && node.key == key {
+	if node != nil && cmp.Compare(key, node.key) == 0 {
 		return node.value, true
 	}
 	return // zero, false
@@ -97,6 +100,15 @@ func (tree *Tree[K, V]) Get(key K) (value V, found bool) {
 func (tree *Tree[K, V]) Contains(key K) bool {
 	_, found := tree.Get(key)
 	return found
+}
+
+// All returns an in-order iterator for this tree.
+//
+//	for node := range tree.All() {
+//		fmt.Println(node.Key(), node.Value())
+//	})
+func (tree *Tree[K, V]) All() iter.Seq[*Tree[K, V]] {
+	return func(yield func(*Tree[K, V]) bool) { tree.pull(yield) }
 }
 
 func (tree *Tree[K, V]) pull(yield func(*Tree[K, V]) bool) bool {
@@ -138,19 +150,19 @@ func (tree *Tree[K, V]) Patch(key K, update func(node *Tree[K, V]) (value V, ok 
 	}
 
 	copy := *tree
-	switch {
+	switch cmp.Compare(key, tree.key) {
 	default:
 		if value, ok := update(tree); ok {
 			copy.value = value
 			return &copy
 		}
 		return tree
-	case cmp.Less(key, tree.key):
+	case -1:
 		copy.left = tree.left.Patch(key, update)
 		if copy.left == tree.left {
 			return tree
 		}
-	case cmp.Less(tree.key, key):
+	case +1:
 		copy.right = tree.right.Patch(key, update)
 		if copy.right == tree.right {
 			return tree
@@ -168,13 +180,13 @@ func (tree *Tree[K, V]) Delete(key K) *Tree[K, V] {
 	}
 
 	copy := *tree
-	switch {
-	case cmp.Less(key, tree.key):
+	switch cmp.Compare(key, tree.key) {
+	case -1:
 		copy.left = tree.left.Delete(key)
 		if copy.left == tree.left {
 			return tree
 		}
-	case cmp.Less(tree.key, key):
+	case +1:
 		copy.right = tree.right.Delete(key)
 		if copy.right == tree.right {
 			return tree
