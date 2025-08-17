@@ -78,18 +78,10 @@ func (tree *Tree[K, V]) Level() int {
 // Get retrieves the value for a given key;
 // found indicates whether key exists in this tree.
 func (tree *Tree[K, V]) Get(key K) (value V, found bool) {
-	// For strings, 2-way search is faster:
+	// Floor uses 2-way search, which is faster for strings:
 	//   https://go.dev/issue/71270
 	//   https://user.it.uu.se/~arnea/ps/searchproc.pdf
-	var node *Tree[K, V]
-	for tree != nil {
-		if cmp.Less(key, tree.key) {
-			tree = tree.left
-		} else {
-			node = tree
-			tree = tree.right
-		}
-	}
+	node := tree.Floor(key)
 	if node != nil && cmp.Compare(key, node.key) == 0 {
 		return node.value, true
 	}
@@ -100,6 +92,38 @@ func (tree *Tree[K, V]) Get(key K) (value V, found bool) {
 func (tree *Tree[K, V]) Has(key K) bool {
 	_, found := tree.Get(key)
 	return found
+}
+
+// Floor finds the largest key in this tree less than or equal to key.
+// It returns a Tree rooted at that key,
+// or nil if there's no such key.
+func (tree *Tree[K, V]) Floor(key K) *Tree[K, V] {
+	var node *Tree[K, V]
+	for tree != nil {
+		if cmp.Less(key, tree.key) {
+			tree = tree.left
+		} else {
+			node = tree
+			tree = tree.right
+		}
+	}
+	return node
+}
+
+// Ceil finds the smallest key in this tree greater than or equal to key.
+// It returns a Tree rooted at that key,
+// or nil if there's no such key.
+func (tree *Tree[K, V]) Ceil(key K) *Tree[K, V] {
+	var node *Tree[K, V]
+	for tree != nil {
+		if cmp.Less(tree.key, key) {
+			tree = tree.right
+		} else {
+			node = tree
+			tree = tree.left
+		}
+	}
+	return node
 }
 
 // All returns an in-order iterator for this tree.

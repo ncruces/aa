@@ -81,6 +81,35 @@ func TestAddContainsDelete(t *testing.T) {
 	}
 }
 
+func TestAddFloorCeil(t *testing.T) {
+	var aat *Tree[int, struct{}]
+
+	aat = aat.Add(1).Add(3).Add(5)
+	if ok := aat.Has(3); !ok {
+		t.Error()
+	}
+
+	if n := aat.Floor(0); n != nil {
+		t.Error()
+	}
+	if n := aat.Floor(3); n.Key() != 3 {
+		t.Error()
+	}
+	if n := aat.Floor(6); n.Key() != 5 {
+		t.Error()
+	}
+
+	if n := aat.Ceil(0); n.Key() != 1 {
+		t.Error()
+	}
+	if n := aat.Ceil(3); n.Key() != 3 {
+		t.Error()
+	}
+	if n := aat.Ceil(6); n != nil {
+		t.Error()
+	}
+}
+
 func TestAddPatchGet(t *testing.T) {
 	var aat *Tree[int, string]
 
