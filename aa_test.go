@@ -58,16 +58,12 @@ func TestPutGetAll(t *testing.T) {
 		t.Error(s, ok)
 	}
 
-	var slice []int
-	aat.Put(0, "zero").All()(func(n *Tree[int, string]) bool {
-		slice = append(slice, n.key)
-		return true
-	})
-
-	for i, j := range slice {
+	var j int
+	for i := range aat.Put(0, "zero").All() {
 		if i != j {
 			t.Errorf("%d ≠ %d", i, j)
 		}
+		j++
 	}
 }
 
@@ -75,12 +71,12 @@ func TestAddContainsDelete(t *testing.T) {
 	var aat *Tree[int, struct{}]
 
 	aat = aat.Add(1).Add(3).Add(5)
-	if ok := aat.Contains(3); !ok {
+	if ok := aat.Has(3); !ok {
 		t.Error()
 	}
 
 	aat = aat.Delete(3)
-	if ok := aat.Contains(3); ok {
+	if ok := aat.Has(3); ok {
 		t.Error()
 	}
 }
@@ -379,14 +375,14 @@ func FuzzTree(f *testing.F) {
 			switch i % 3 {
 			case 0:
 				aat = aat.Add(cmd)
-				if !aat.Contains(cmd) {
+				if !aat.Has(cmd) {
 					t.Fail()
 				}
 				aat.check()
 
 			case 1:
 				aat = aat.Delete(cmd)
-				if aat.Contains(cmd) {
+				if aat.Has(cmd) {
 					t.Fail()
 				}
 				aat.check()

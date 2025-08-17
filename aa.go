@@ -13,7 +13,7 @@ import (
 //
 //	var empty *aa.Tree[int, string]
 //	one := empty.Put(1, "one")
-//	one.Contains(1) ⟹ true
+//	one.Has(1) ⟹ true
 //
 // Note: the zero value for Tree{} is a valid, but non-empty, tree.
 type Tree[K cmp.Ordered, V any] struct {
@@ -96,26 +96,26 @@ func (tree *Tree[K, V]) Get(key K) (value V, found bool) {
 	return // zero, false
 }
 
-// Contains reports whether key exists in this tree.
-func (tree *Tree[K, V]) Contains(key K) bool {
+// Has reports whether key exists in this tree.
+func (tree *Tree[K, V]) Has(key K) bool {
 	_, found := tree.Get(key)
 	return found
 }
 
 // All returns an in-order iterator for this tree.
 //
-//	for node := range tree.All() {
-//		fmt.Println(node.Key(), node.Value())
+//	for key, value := range tree.All() {
+//		fmt.Println(key, value)
 //	})
-func (tree *Tree[K, V]) All() iter.Seq[*Tree[K, V]] {
-	return func(yield func(*Tree[K, V]) bool) { tree.pull(yield) }
+func (tree *Tree[K, V]) All() iter.Seq2[K, V] {
+	return func(yield func(K, V) bool) { tree.pull(yield) }
 }
 
-func (tree *Tree[K, V]) pull(yield func(*Tree[K, V]) bool) bool {
+func (tree *Tree[K, V]) pull(yield func(K, V) bool) bool {
 	if tree == nil {
 		return true
 	}
-	return tree.left.pull(yield) && yield(tree) && tree.right.pull(yield)
+	return tree.left.pull(yield) && yield(tree.key, tree.value) && tree.right.pull(yield)
 }
 
 // Put returns a modified tree with key set to value.
@@ -129,7 +129,7 @@ func (tree *Tree[K, V]) Put(key K, value V) *Tree[K, V] {
 
 // Add returns a (possibly) modified tree that contains key.
 //
-//	tree.Add(key).Contains(key) ⟹ true
+//	tree.Add(key).Has(key) ⟹ true
 func (tree *Tree[K, V]) Add(key K) *Tree[K, V] {
 	return tree.Patch(key, func(node *Tree[K, V]) (value V, ok bool) {
 		return value, node == nil
@@ -173,7 +173,7 @@ func (tree *Tree[K, V]) Patch(key K, update func(node *Tree[K, V]) (value V, ok 
 
 // Delete returns a modified tree with key removed from it.
 //
-//	tree.Delete(key).Contains(key) ⟹ false
+//	tree.Delete(key).Has(key) ⟹ false
 func (tree *Tree[K, V]) Delete(key K) *Tree[K, V] {
 	if tree == nil {
 		return nil
