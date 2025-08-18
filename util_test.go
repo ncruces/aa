@@ -27,7 +27,7 @@ func (tree *Tree[K, V]) check() {
 	tree.Right().check()
 }
 
-func node[K cmp.Ordered](key K, level int, children ...*Tree[K, struct{}]) *Tree[K, struct{}] {
+func node[K cmp.Ordered](key K, level int8, children ...*Tree[K, struct{}]) *Tree[K, struct{}] {
 	if children == nil {
 		return &Tree[K, struct{}]{key: key, level: level - 1}
 	}

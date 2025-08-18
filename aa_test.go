@@ -39,7 +39,7 @@ func TestKeyValueLevelLeftRight(t *testing.T) {
 	}
 }
 
-func TestPutGetAll(t *testing.T) {
+func TestPutGet(t *testing.T) {
 	var aat *Tree[int, string]
 	aat = aat.Put(1, "one").Put(3, "three").Put(5, "five")
 	aat = aat.Put(4, "four").Put(2, "two")
@@ -58,16 +58,12 @@ func TestPutGetAll(t *testing.T) {
 		t.Error(s, ok)
 	}
 
-	var j int
-	for i := range aat.Put(0, "zero").All() {
-		if i != j {
-			t.Errorf("%d ≠ %d", i, j)
-		}
-		j++
+	if n := aat.Len(); n != 5 {
+		t.Error(n)
 	}
 }
 
-func TestAddContainsDelete(t *testing.T) {
+func TestAddHasDelete(t *testing.T) {
 	var aat *Tree[int, struct{}]
 
 	aat = aat.Add(1).Add(3).Add(5)
@@ -83,11 +79,7 @@ func TestAddContainsDelete(t *testing.T) {
 
 func TestAddFloorCeil(t *testing.T) {
 	var aat *Tree[int, struct{}]
-
 	aat = aat.Add(1).Add(3).Add(5)
-	if ok := aat.Has(3); !ok {
-		t.Error()
-	}
 
 	if n := aat.Floor(0); n != nil {
 		t.Error()
@@ -235,6 +227,56 @@ func TestTree_Delete(t *testing.T) {
 	if a, b := aat, aat.Delete(10); a != b {
 		t.Fatalf("%p ≠ %p", a, b)
 	}
+}
+
+func TestTree_DeleteMin(t *testing.T) {
+	var aat *Tree[int, struct{}]
+	aat = aat.Add(0).Add(1).Add(2).Add(3).Add(4).Add(5).Add(6)
+
+	for i := range 7 {
+		n := aat.Min()
+		if n.Key() != i {
+			t.Fatalf("%d", n.Key())
+		}
+		aat, n = aat.DeleteMin()
+		if n.Key() != i {
+			t.Fatalf("%d", n.Key())
+		}
+		aat.check()
+	}
+
+	if aat != nil {
+		t.Error(aat)
+	}
+	if aat.Min() != nil {
+		t.Error(aat)
+	}
+	aat.DeleteMin()
+}
+
+func TestTree_DeleteMax(t *testing.T) {
+	var aat *Tree[int, struct{}]
+	aat = aat.Add(0).Add(1).Add(2).Add(3).Add(4).Add(5).Add(6)
+
+	for i := 6; i >= 0; i-- {
+		n := aat.Max()
+		if n.Key() != i {
+			t.Fatalf("%d", n.Key())
+		}
+		aat, n = aat.DeleteMax()
+		if n.Key() != i {
+			t.Fatalf("%d", n.Key())
+		}
+		aat.check()
+	}
+
+	if aat != nil {
+		t.Error(aat)
+	}
+	if aat.Max() != nil {
+		t.Error(aat)
+	}
+	aat.DeleteMax()
 }
 
 func TestTree_Delete_missing(t *testing.T) {

@@ -1,10 +1,7 @@
 // Package aa implements immutable AA trees.
 package aa
 
-import (
-	"cmp"
-	"iter"
-)
+import "cmp"
 
 // Tree is an immutable AA tree,
 // a form of self-balancing binary search tree.
@@ -21,7 +18,7 @@ type Tree[K cmp.Ordered, V any] struct {
 	right *Tree[K, V]
 	key   K
 	value V
-	level int
+	level int8
 }
 
 // Key returns the key at the root of this tree.
@@ -72,31 +69,49 @@ func (tree *Tree[K, V]) Level() int {
 	if tree == nil {
 		return 0
 	}
-	return tree.level + 1
+	return int(tree.level) + 1
 }
 
-// Get retrieves the value for a given key;
-// found indicates whether key exists in this tree.
-func (tree *Tree[K, V]) Get(key K) (value V, found bool) {
-	// Floor uses 2-way search, which is faster for strings:
-	//   https://go.dev/issue/71270
-	//   https://user.it.uu.se/~arnea/ps/searchproc.pdf
-	node := tree.Floor(key)
-	if node != nil && cmp.Compare(key, node.key) == 0 {
-		return node.value, true
+// Len counts the number of nodes in this tree.
+func (tree *Tree[K, V]) Len() int {
+	// AA trees lean right, so recurse to the left.
+	var len int
+	for tree != nil {
+		len += tree.left.Len() + 1
+		tree = tree.right
 	}
-	return // zero, false
+	return len
 }
 
-// Has reports whether key exists in this tree.
-func (tree *Tree[K, V]) Has(key K) bool {
-	_, found := tree.Get(key)
-	return found
+// Min finds the least key in this tree,
+// and returns the node for that key,
+// or nil if this tree is empty.
+func (tree *Tree[K, V]) Min() *Tree[K, V] {
+	if tree == nil {
+		return nil
+	}
+	for tree.left != nil {
+		tree = tree.left
+	}
+	return tree
 }
 
-// Floor finds the largest key in this tree less than or equal to key.
-// It returns a Tree rooted at that key,
-// or nil if there's no such key.
+// Max finds the greatest key in this tree,
+// and returns the node for that key,
+// or nil if this tree is empty.
+func (tree *Tree[K, V]) Max() *Tree[K, V] {
+	if tree == nil {
+		return nil
+	}
+	for tree.right != nil {
+		tree = tree.right
+	}
+	return tree
+}
+
+// Floor finds the greatest key in this tree less-than or equal-to key,
+// and returns the node for that key,
+// or nil if no such key exists in this tree.
 func (tree *Tree[K, V]) Floor(key K) *Tree[K, V] {
 	var node *Tree[K, V]
 	for tree != nil {
@@ -110,9 +125,9 @@ func (tree *Tree[K, V]) Floor(key K) *Tree[K, V] {
 	return node
 }
 
-// Ceil finds the smallest key in this tree greater than or equal to key.
-// It returns a Tree rooted at that key,
-// or nil if there's no such key.
+// Ceil finds the least key in this tree greater-than or equal-to key,
+// and returns the node for that key,
+// or nil if no such key exists in this tree.
 func (tree *Tree[K, V]) Ceil(key K) *Tree[K, V] {
 	var node *Tree[K, V]
 	for tree != nil {
@@ -126,20 +141,23 @@ func (tree *Tree[K, V]) Ceil(key K) *Tree[K, V] {
 	return node
 }
 
-// All returns an in-order iterator for this tree.
-//
-//	for key, value := range tree.All() {
-//		fmt.Println(key, value)
-//	})
-func (tree *Tree[K, V]) All() iter.Seq2[K, V] {
-	return func(yield func(K, V) bool) { tree.pull(yield) }
+// Get retrieves the value for a given key;
+// found indicates whether key exists in this tree.
+func (tree *Tree[K, V]) Get(key K) (value V, found bool) {
+	// Floor uses 2-way search, which is faster for strings:
+	//   https://go.dev/issue/71270
+	//   https://user.it.uu.se/~arnea/ps/searchproc.pdf
+	node := tree.Floor(key)
+	if node != nil && eq(key, node.key) {
+		return node.value, true
+	}
+	return // zero, false
 }
 
-func (tree *Tree[K, V]) pull(yield func(K, V) bool) bool {
-	if tree == nil {
-		return true
-	}
-	return tree.left.pull(yield) && yield(tree.key, tree.value) && tree.right.pull(yield)
+// Has reports whether key exists in this tree.
+func (tree *Tree[K, V]) Has(key K) bool {
+	_, found := tree.Get(key)
+	return found
 }
 
 // Put returns a modified tree with key set to value.
@@ -160,8 +178,8 @@ func (tree *Tree[K, V]) Add(key K) *Tree[K, V] {
 	})
 }
 
-// Patch looks for key in this tree, calls update with the node for that key
-// (or nil, if key is not found), and returns a possibly modified tree.
+// Patch finds key in this tree, calls update with the node for that key
+// (or nil, if key is not found), and returns a (possibly) modified tree.
 //
 // The update callback can opt to set/update the value for the key,
 // by returning (value, true), or not, by returning false.
@@ -195,7 +213,7 @@ func (tree *Tree[K, V]) Patch(key K, update func(node *Tree[K, V]) (value V, ok 
 	return copy.ins_rebalance()
 }
 
-// Delete returns a modified tree with key removed from it.
+// Delete returns a (possibly) modified tree with key removed from it.
 //
 //	tree.Delete(key).Has(key) ⟹ false
 func (tree *Tree[K, V]) Delete(key K) *Tree[K, V] {
@@ -219,99 +237,38 @@ func (tree *Tree[K, V]) Delete(key K) *Tree[K, V] {
 		if tree.left == nil {
 			return tree.right
 		}
-		heir := tree.left
-		for heir.right != nil {
-			heir = heir.right
-		}
+		var heir *Tree[K, V]
+		copy.left, heir = tree.left.DeleteMax()
 		copy.key = heir.key
 		copy.value = heir.value
-		copy.left = tree.left.Delete(heir.key)
 	}
 	return copy.del_rebalance()
 }
 
-func (tree Tree[K, V]) ins_rebalance() *Tree[K, V] {
-	if tree.need_raise() { // avoid 2 rotations and allocs
-		tree.level++
-		return &tree
+// DeleteMin returns a modified tree with its least key removed from it,
+// and the removed node.
+func (tree *Tree[K, V]) DeleteMin() (_, node *Tree[K, V]) {
+	if tree == nil {
+		return nil, nil
 	}
-	return tree.skew().split()
+	if tree.left == nil {
+		return tree.right, tree
+	}
+	copy := *tree
+	copy.left, node = tree.left.DeleteMin()
+	return copy.del_rebalance(), node
 }
 
-func (tree Tree[K, V]) del_rebalance() *Tree[K, V] {
-	var want int
-	if tree.left != nil && tree.right != nil {
-		want = 1 + min(tree.left.level, tree.right.level)
+// DeleteMax returns a modified tree with its greatest key removed from it,
+// and the removed node.
+func (tree *Tree[K, V]) DeleteMax() (_, node *Tree[K, V]) {
+	if tree == nil {
+		return nil, nil
 	}
-	if tree.level > want {
-		tree.level = want
-		if tree.right != nil && tree.right.level > want {
-			copy := *tree.right
-			copy.level = want
-			tree.right = &copy
-		}
-		return tree.skew_r().split_r()
+	if tree.right == nil {
+		return tree.left, tree
 	}
-	return &tree
-}
-
-func (tree Tree[K, V]) need_skew() bool {
-	return tree.left != nil && tree.left.level == tree.level
-}
-
-func (tree Tree[K, V]) need_split() bool {
-	return tree.right != nil && tree.right.right != nil && tree.right.right.level == tree.level
-}
-
-func (tree Tree[K, V]) need_raise() bool {
-	return tree.left != nil && tree.right != nil &&
-		tree.left.level == tree.level &&
-		tree.right.level == tree.level
-}
-
-func (tree Tree[K, V]) skew() *Tree[K, V] {
-	if tree.need_skew() {
-		copy := *tree.left
-		tree.left = copy.right
-		copy.right = &tree
-		return &copy
-	}
-	return &tree
-}
-
-func (tree Tree[K, V]) skew_r() *Tree[K, V] {
-	if tree.need_skew() {
-		copy := *tree.left
-		tree.left = copy.right
-		copy.right = tree.skew_r()
-		return &copy
-	}
-	if tree.right != nil && tree.right.need_skew() {
-		copy := *tree.right
-		tree.right = copy.skew_r()
-	}
-	return &tree
-}
-
-func (tree Tree[K, V]) split() *Tree[K, V] {
-	if tree.need_split() {
-		copy := *tree.right
-		tree.right = copy.left
-		copy.left = &tree
-		copy.level++
-		return &copy
-	}
-	return &tree
-}
-
-func (tree Tree[K, V]) split_r() *Tree[K, V] {
-	if tree.need_split() {
-		copy := *tree.right
-		tree.right = copy.left
-		copy.right = copy.right.split_r()
-		copy.left = &tree
-		copy.level++
-		return &copy
-	}
-	return &tree
+	copy := *tree
+	copy.right, node = tree.right.DeleteMax()
+	return copy.del_rebalance(), node
 }
