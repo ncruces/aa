@@ -191,26 +191,31 @@ func (tree *Tree[K, V]) Patch(key K, update func(node *Tree[K, V]) (value V, ok 
 		return nil
 	}
 
-	copy := *tree
 	switch cmp.Compare(key, tree.key) {
 	default:
 		if value, ok := update(tree); ok {
+			copy := *tree
 			copy.value = value
 			return &copy
 		}
 		return tree
 	case -1:
-		copy.left = tree.left.Patch(key, update)
-		if copy.left == tree.left {
+		left := tree.left.Patch(key, update)
+		if left == tree.left {
 			return tree
 		}
+		copy := *tree
+		copy.left = left
+		return copy.ins_rebalance()
 	case +1:
-		copy.right = tree.right.Patch(key, update)
-		if copy.right == tree.right {
+		right := tree.right.Patch(key, update)
+		if right == tree.right {
 			return tree
 		}
+		copy := *tree
+		copy.right = right
+		return copy.ins_rebalance()
 	}
-	return copy.ins_rebalance()
 }
 
 // Delete returns a (possibly) modified tree with key removed from it.
@@ -221,28 +226,34 @@ func (tree *Tree[K, V]) Delete(key K) *Tree[K, V] {
 		return nil
 	}
 
-	copy := *tree
 	switch cmp.Compare(key, tree.key) {
 	case -1:
-		copy.left = tree.left.Delete(key)
-		if copy.left == tree.left {
+		left := tree.left.Delete(key)
+		if left == tree.left {
 			return tree
 		}
+		copy := *tree
+		copy.left = left
+		return copy.del_rebalance()
 	case +1:
-		copy.right = tree.right.Delete(key)
-		if copy.right == tree.right {
+		right := tree.right.Delete(key)
+		if right == tree.right {
 			return tree
 		}
+		copy := *tree
+		copy.right = right
+		return copy.del_rebalance()
 	default:
 		if tree.left == nil {
 			return tree.right
 		}
 		var heir *Tree[K, V]
+		copy := *tree
 		copy.left, heir = tree.left.DeleteMax()
 		copy.key = heir.key
 		copy.value = heir.value
+		return copy.del_rebalance()
 	}
-	return copy.del_rebalance()
 }
 
 // DeleteMin returns a modified tree with its least key removed from it,

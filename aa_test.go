@@ -1,6 +1,7 @@
 package aa
 
 import (
+	"math/rand"
 	"strings"
 	"testing"
 )
@@ -305,7 +306,8 @@ func TestTree_skew(t *testing.T) {
 				node("c", 1)),
 			node("e", 1))
 
-	out := in.skew()
+	tmp := *in
+	out := tmp.skew()
 	if n := out; n.key != "b" || n.Level() != 2 {
 		t.Fatalf("%s,%d", n.key, n.Level())
 	}
@@ -346,7 +348,8 @@ func TestTree_split(t *testing.T) {
 				node("c", 1),
 				node("e", 2)))
 
-	out := in.split()
+	tmp := *in
+	out := tmp.split()
 	if n := out; n.key != "d" || n.Level() != 3 {
 		t.Fatalf("%s,%d", n.key, n.Level())
 	}
@@ -385,7 +388,8 @@ func TestTree_ins_rebalance(t *testing.T) {
 			node(4, 1),
 			node(6, 1))
 
-	out := in.ins_rebalance()
+	tmp := *in
+	out := tmp.ins_rebalance()
 	if n := out; n.key != 5 || n.Level() != 2 {
 		t.Fatalf("%d,%d", n.key, n.Level())
 	}
@@ -417,7 +421,8 @@ func TestTree_del_rebalance(t *testing.T) {
 					nil,
 					node(7, 1))))
 
-	out := in.del_rebalance()
+	tmp := *in
+	out := tmp.del_rebalance()
 	if n := out; n.key != 3 || n.Level() != 2 {
 		t.Fatalf("%d,%d", n.key, n.Level())
 	}
@@ -467,4 +472,18 @@ func FuzzTree(f *testing.F) {
 			}
 		}
 	})
+}
+
+func BenchmarkAdd(b *testing.B) {
+	var aat *Tree[int, string]
+
+	r := rand.New(rand.NewSource(42))
+	n := max(16, b.N)
+
+	for range n {
+		aat = aat.Add(r.Intn(n))
+	}
+	for range n {
+		aat = aat.Delete(r.Intn(n))
+	}
 }
