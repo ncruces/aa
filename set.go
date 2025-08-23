@@ -26,7 +26,7 @@ func (tree *Tree[K, V]) Split(key K) (left, node, right *Tree[K, V]) {
 }
 
 // Union returns the set union of two trees.
-// If both trees have a key, the value from t1 is retained.
+// For keys in both trees, the value from t1 is retained.
 func Union[K cmp.Ordered, V any](t1, t2 *Tree[K, V]) *Tree[K, V] {
 	if t1 == nil {
 		return t2
@@ -91,7 +91,7 @@ func join[K cmp.Ordered, V any](key K, value V, left, right *Tree[K, V]) *Tree[K
 			right: right,
 			key:   key,
 			value: value,
-			level: int8(ll),
+			level: int8(ll), // left.level + 1
 		}
 	}
 }
@@ -99,6 +99,9 @@ func join[K cmp.Ordered, V any](key K, value V, left, right *Tree[K, V]) *Tree[K
 func join2[K cmp.Ordered, V any](left, right *Tree[K, V]) *Tree[K, V] {
 	if left == nil {
 		return right
+	}
+	if right == nil {
+		return left
 	}
 	left, node := left.DeleteMax()
 	return join(node.key, node.value, left, right)

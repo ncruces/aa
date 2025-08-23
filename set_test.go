@@ -6,24 +6,6 @@ import (
 	"testing"
 )
 
-func Test_join(t *testing.T) {
-	r := rand.New(rand.NewSource(42))
-
-	for range 1000 {
-		var left, right *Tree[int8, struct{}]
-
-		for range r.Intn(200) {
-			left = left.Add(-1 - int8(r.Intn(100)))
-		}
-		for range r.Intn(200) {
-			right = right.Add(+1 + int8(r.Intn(100)))
-		}
-
-		tree := join(0, struct{}{}, left, right)
-		tree.check()
-	}
-}
-
 func TestUnion(t *testing.T) {
 	var t1, t2 *Tree[int, string]
 	t1 = t1.Put(1, "one").Put(2, "two").Put(3, "three").Put(5, "five")
@@ -79,5 +61,41 @@ func TestDifference(t *testing.T) {
 	}
 	if !slices.Equal(out, []int{1, 3, 5}) {
 		t.Error(out)
+	}
+}
+
+func Test_join(t *testing.T) {
+	r := rand.New(rand.NewSource(42))
+
+	for range 1000 {
+		var left, right *Tree[int8, struct{}]
+
+		for range r.Intn(200) {
+			left = left.Add(-1 - int8(r.Intn(100)))
+		}
+		for range r.Intn(200) {
+			right = right.Add(+1 + int8(r.Intn(100)))
+		}
+
+		tree := join(0, struct{}{}, left, right)
+		tree.check()
+	}
+}
+
+func Test_join2(t *testing.T) {
+	r := rand.New(rand.NewSource(42))
+
+	for range 1000 {
+		var left, right *Tree[int8, struct{}]
+
+		for range r.Intn(200) {
+			left = left.Add(-1 - int8(r.Intn(100)))
+		}
+		for range r.Intn(200) {
+			right = right.Add(+1 + int8(r.Intn(100)))
+		}
+
+		tree := join2(left, right)
+		tree.check()
 	}
 }
