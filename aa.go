@@ -199,6 +199,7 @@ func (tree *Tree[K, V]) Patch(key K, update func(node *Tree[K, V]) (value V, ok 
 			return &copy
 		}
 		return tree
+
 	case -1:
 		left := tree.left.Patch(key, update)
 		if left == tree.left {
@@ -207,6 +208,7 @@ func (tree *Tree[K, V]) Patch(key K, update func(node *Tree[K, V]) (value V, ok 
 		copy := *tree
 		copy.left = left
 		return copy.ins_rebalance()
+
 	case +1:
 		right := tree.right.Patch(key, update)
 		if right == tree.right {
@@ -235,6 +237,7 @@ func (tree *Tree[K, V]) Delete(key K) *Tree[K, V] {
 		copy := *tree
 		copy.left = left
 		return copy.del_rebalance()
+
 	case +1:
 		right := tree.right.Delete(key)
 		if right == tree.right {
@@ -243,6 +246,7 @@ func (tree *Tree[K, V]) Delete(key K) *Tree[K, V] {
 		copy := *tree
 		copy.right = right
 		return copy.del_rebalance()
+
 	default:
 		if tree.left == nil {
 			return tree.right

@@ -76,6 +76,11 @@ func TestAddHasDelete(t *testing.T) {
 	if ok := aat.Has(3); ok {
 		t.Error()
 	}
+
+	aat = aat.Delete(5).Delete(1)
+	if aat != nil {
+		t.Error()
+	}
 }
 
 func TestAddFloorCeil(t *testing.T) {

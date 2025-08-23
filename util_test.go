@@ -7,6 +7,12 @@ func (tree *Tree[K, V]) check() {
 		return
 	}
 
+	if tree.Left() != nil && !cmp.Less(tree.Left().Key(), tree.Key()) {
+		panic("the left child's key must be less than this key")
+	}
+	if tree.Right() != nil && !cmp.Less(tree.Key(), tree.Right().Key()) {
+		panic("this key must be less than the right child's key")
+	}
 	if tree.Left() == nil && tree.Right() == nil && tree.Level() != 1 {
 		panic("the level of every leaf node is one")
 	}
