@@ -69,15 +69,15 @@ func Test_join(t *testing.T) {
 	var buf [512]byte
 	for range 1000 {
 		r.Read(buf[:])
-		joinFuzzer(t, buf[:])
+		join3Fuzzer(t, buf[:])
 	}
 }
 
-func Fuzz_join1(f *testing.F) {
-	f.Fuzz(joinFuzzer)
+func Fuzz_join3(f *testing.F) {
+	f.Fuzz(join3Fuzzer)
 }
 
-func joinFuzzer(t *testing.T, ints []byte) {
+func join3Fuzzer(t *testing.T, ints []byte) {
 	var left, right *Tree[int8, struct{}]
 
 	for _, b := range ints {
