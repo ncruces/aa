@@ -148,7 +148,7 @@ func (tree *Tree[K, V]) Get(key K) (value V, found bool) {
 	//   https://go.dev/issue/71270
 	//   https://user.it.uu.se/~arnea/ps/searchproc.pdf
 	node := tree.Floor(key)
-	if node != nil && eq(key, node.key) {
+	if node != nil && (key == node.key || key != key) {
 		return node.value, true
 	}
 	return // zero, false

@@ -66,36 +66,61 @@ func TestDifference(t *testing.T) {
 
 func Test_join(t *testing.T) {
 	r := rand.New(rand.NewSource(42))
-
+	var buf [512]byte
 	for range 1000 {
-		var left, right *Tree[int8, struct{}]
-
-		for range r.Intn(200) {
-			left = left.Add(-1 - int8(r.Intn(100)))
-		}
-		for range r.Intn(200) {
-			right = right.Add(+1 + int8(r.Intn(100)))
-		}
-
-		tree := join(0, struct{}{}, left, right)
-		tree.check()
+		r.Read(buf[:])
+		joinFuzzer(t, buf[:])
 	}
+}
+
+func Fuzz_join1(f *testing.F) {
+	f.Fuzz(joinFuzzer)
+}
+
+func joinFuzzer(t *testing.T, ints []byte) {
+	var left, right *Tree[int8, struct{}]
+
+	for _, b := range ints {
+		if i := int8(b); i > 0 {
+			right.Add(i)
+		} else if i < 0 {
+			left.Add(i)
+		} else {
+			break
+		}
+	}
+
+	var zero Tree[int8, struct{}]
+	tree := join(left, &zero, right)
+	tree.check()
 }
 
 func Test_join2(t *testing.T) {
 	r := rand.New(rand.NewSource(42))
-
+	var buf [512]byte
 	for range 1000 {
-		var left, right *Tree[int8, struct{}]
-
-		for range r.Intn(200) {
-			left = left.Add(-1 - int8(r.Intn(100)))
-		}
-		for range r.Intn(200) {
-			right = right.Add(+1 + int8(r.Intn(100)))
-		}
-
-		tree := join2(left, right)
-		tree.check()
+		r.Read(buf[:])
+		join2Fuzzer(t, buf[:])
 	}
+}
+
+func Fuzz_join2(f *testing.F) {
+	f.Fuzz(join2Fuzzer)
+}
+
+func join2Fuzzer(t *testing.T, ints []byte) {
+	var left, right *Tree[int8, struct{}]
+
+	for _, b := range ints {
+		if i := int8(b); i > 0 {
+			right.Add(i)
+		} else if i < 0 {
+			left.Add(i)
+		} else {
+			break
+		}
+	}
+
+	tree := join2(left, right)
+	tree.check()
 }
