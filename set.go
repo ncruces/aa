@@ -72,6 +72,23 @@ func Difference[K cmp.Ordered, V any](t1, t2 *Tree[K, V]) *Tree[K, V] {
 	return join2(left, right)
 }
 
+// SymmetricDifference returns the set symmetric difference of two trees.
+func SymmetricDifference[K cmp.Ordered, V any](t1, t2 *Tree[K, V]) *Tree[K, V] {
+	if t1 == nil {
+		return t2
+	}
+	if t2 == nil {
+		return t1
+	}
+	left, node, right := t1.Split(t2.key)
+	left = SymmetricDifference(left, t2.left)
+	right = SymmetricDifference(right, t2.right)
+	if node == nil {
+		return join(left, t2, right)
+	}
+	return join2(left, right)
+}
+
 func join[K cmp.Ordered, V any](left, node, right *Tree[K, V]) *Tree[K, V] {
 	if left == node.left && right == node.right {
 		return node

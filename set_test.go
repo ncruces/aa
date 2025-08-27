@@ -64,12 +64,29 @@ func TestDifference(t *testing.T) {
 	}
 }
 
+func TestSymmetricDifference(t *testing.T) {
+	var t1, t2 *Tree[int, string]
+	t1 = t1.Put(1, "one").Put(2, "two").Put(3, "three").Put(5, "five")
+	t2 = t2.Put(0, "zero").Put(2, "").Put(4, "four")
+
+	var out []int
+	for i, v := range SymmetricDifference(t1, t2).Ascend() {
+		out = append(out, i)
+		if v == "" {
+			t.Error()
+		}
+	}
+	if !slices.Equal(out, []int{0, 1, 3, 4, 5}) {
+		t.Error(out)
+	}
+}
+
 func Test_join(t *testing.T) {
 	r := rand.New(rand.NewSource(42))
 	var buf [512]byte
 	for range 1000 {
 		r.Read(buf[:])
-		join3Fuzzer(t, buf[:])
+		join3Fuzzer(t, buf[:r.Intn(len(buf))])
 	}
 }
 
@@ -100,7 +117,7 @@ func Test_join2(t *testing.T) {
 	var buf [512]byte
 	for range 1000 {
 		r.Read(buf[:])
-		join2Fuzzer(t, buf[:])
+		join2Fuzzer(t, buf[:r.Intn(len(buf))])
 	}
 }
 
