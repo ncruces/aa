@@ -34,10 +34,10 @@ func Union[K cmp.Ordered, V any](t1, t2 *Tree[K, V]) *Tree[K, V] {
 	if t2 == nil {
 		return t1
 	}
-	left, _, right := t2.Split(t1.key)
-	left = Union(t1.left, left)
-	right = Union(t1.right, right)
-	return join(left, t1, right)
+	left, node, right := t1.Split(t2.key)
+	left = Union(left, t2.left)
+	right = Union(right, t2.right)
+	return join(left, node, right)
 }
 
 // Intersection returns the set intersection of two trees.
