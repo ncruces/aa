@@ -73,6 +73,10 @@ func Difference[K cmp.Ordered, V any](t1, t2 *Tree[K, V]) *Tree[K, V] {
 }
 
 func join[K cmp.Ordered, V any](left, node, right *Tree[K, V]) *Tree[K, V] {
+	if left == node.left && right == node.right {
+		return node
+	}
+
 	ll := left.Level()
 	rl := right.Level()
 
