@@ -25,6 +25,20 @@ func (tree *Tree[K, V]) Split(key K) (left, node, right *Tree[K, V]) {
 	}
 }
 
+// Filter returns a tree containing only the nodes for which pred returns true.
+func (tree *Tree[K, V]) Filter(pred func(node *Tree[K, V]) bool) *Tree[K, V] {
+	if tree == nil {
+		return nil
+	}
+
+	left := tree.left.Filter(pred)
+	right := tree.right.Filter(pred)
+	if pred(tree) {
+		return join(left, tree, right)
+	}
+	return join2(left, right)
+}
+
 // Union returns the set union of two trees.
 // For keys in both trees, the value from t1 is retained.
 func Union[K cmp.Ordered, V any](t1, t2 *Tree[K, V]) *Tree[K, V] {
