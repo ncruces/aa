@@ -25,7 +25,7 @@ func (tree *Tree[K, V]) Split(key K) (left, node, right *Tree[K, V]) {
 	}
 }
 
-// Filter returns a tree containing only the nodes for which pred returns true.
+// Filter returns a tree of nodes for which pred returns true.
 func (tree *Tree[K, V]) Filter(pred func(node *Tree[K, V]) bool) *Tree[K, V] {
 	if tree == nil {
 		return nil
@@ -37,6 +37,21 @@ func (tree *Tree[K, V]) Filter(pred func(node *Tree[K, V]) bool) *Tree[K, V] {
 		return join(left, tree, right)
 	}
 	return join2(left, right)
+}
+
+// Partition returns a tree of nodes for which pred returns true,
+// and a tree of nodes for which it returns false.
+func (tree *Tree[K, V]) Partition(pred func(node *Tree[K, V]) bool) (t, f *Tree[K, V]) {
+	if tree == nil {
+		return nil, nil
+	}
+
+	lt, lf := tree.left.Partition(pred)
+	rt, rf := tree.right.Partition(pred)
+	if pred(tree) {
+		return join(lt, tree, rt), join2(lf, rf)
+	}
+	return join2(lt, rt), join(lf, tree, rf)
 }
 
 // Union returns the set union of two trees.
