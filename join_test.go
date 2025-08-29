@@ -5,6 +5,24 @@ import (
 	"testing"
 )
 
+func TestFilter(t *testing.T) {
+	var aat *Tree[int, struct{}]
+	aat = aat.Add(0).Add(1).Add(2)
+	aat = aat.Add(3).Add(4).Add(5)
+
+	even := aat.Filter(func (node *Tree[int, struct{}]) bool {
+		return node.key % 2 == 0
+	})
+
+	var j int
+	for i := range even.Ascend() {
+		if i != j {
+			t.Errorf("%d ≠ %d", i, j)
+		}
+		j += 2
+	}
+}
+
 func Test_join(t *testing.T) {
 	r := rand.New(rand.NewSource(42))
 	var buf [512]byte
