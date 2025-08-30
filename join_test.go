@@ -1,0 +1,128 @@
+package aa
+
+import (
+	"math/rand"
+	"testing"
+)
+
+func TestFilter(t *testing.T) {
+	var aat *Tree[int, struct{}]
+	aat = aat.Add(0).Add(1).Add(2)
+	aat = aat.Add(3).Add(4).Add(5)
+
+	even := aat.Filter(func (node *Tree[int, struct{}]) bool {
+		return node.key % 2 == 0
+	})
+
+	var j int
+	for i := range even.Ascend() {
+		if i != j {
+			t.Errorf("%d ≠ %d", i, j)
+		}
+		j += 2
+	}
+}
+
+func TestPartition(t *testing.T) {
+	var aat *Tree[int, struct{}]
+	aat = aat.Add(0).Add(1).Add(2)
+	aat = aat.Add(3).Add(4).Add(5)
+
+	even, odd := aat.Partition(func (node *Tree[int, struct{}]) bool {
+		return node.key % 2 == 0
+	})
+
+	var j int
+	for i := range even.Ascend() {
+		if i != j {
+			t.Errorf("%d ≠ %d", i, j)
+		}
+		j += 2
+	}
+
+	j = 1
+	for i := range odd.Ascend() {
+		if i != j {
+			t.Errorf("%d ≠ %d", i, j)
+		}
+		j += 2
+	}
+}
+
+func Test_join(t *testing.T) {
+	var aat *Tree[int, struct{}]
+	aat = aat.Add(0).Add(1).Add(2)
+
+	if a := join(aat.left, aat, aat.right); a != aat {
+		t.Errorf("%p ≠ %p", a, aat)
+	}
+
+	r := rand.New(rand.NewSource(42))
+	var buf [512]byte
+	for range 1000 {
+		r.Read(buf[:])
+		join3Fuzzer(t, buf[:r.Intn(512)])
+	}
+}
+
+func Fuzz_join3(f *testing.F) {
+	f.Fuzz(join3Fuzzer)
+}
+
+func join3Fuzzer(t *testing.T, ints []byte) {
+	var left, right *Tree[int8, struct{}]
+
+	for _, b := range ints {
+		if i := int8(b); i > 0 {
+			right.Add(i)
+		} else if i < 0 {
+			left.Add(i)
+		} else {
+			break
+		}
+	}
+
+	var zero Tree[int8, struct{}]
+	tree := join(left, &zero, right)
+	tree.check()
+}
+
+func Test_join2(t *testing.T) {
+	var aat *Tree[int, struct{}]
+	aat = aat.Add(0).Add(1).Add(2)
+
+	if a := join2(aat, nil); a != aat {
+		t.Errorf("%p ≠ %p", a, aat)
+	}
+	if a := join2(nil, aat); a != aat {
+		t.Errorf("%p ≠ %p", a, aat)
+	}
+
+	r := rand.New(rand.NewSource(42))
+	var buf [512]byte
+	for range 1000 {
+		r.Read(buf[:])
+		join2Fuzzer(t, buf[:r.Intn(512)])
+	}
+}
+
+func Fuzz_join2(f *testing.F) {
+	f.Fuzz(join2Fuzzer)
+}
+
+func join2Fuzzer(t *testing.T, ints []byte) {
+	var left, right *Tree[int8, struct{}]
+
+	for _, b := range ints {
+		if i := int8(b); i > 0 {
+			right.Add(i)
+		} else if i < 0 {
+			left.Add(i)
+		} else {
+			break
+		}
+	}
+
+	tree := join2(left, right)
+	tree.check()
+}
