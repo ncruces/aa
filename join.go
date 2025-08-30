@@ -59,10 +59,10 @@ func join[K cmp.Ordered, V any](left, node, right *Tree[K, V]) *Tree[K, V] {
 		return node
 	}
 
-	var ll, rl int
-	if left != nil || right == nil || right.right != nil || right.left != nil {
-		ll = left.Level()
-		rl = right.Level()
+	ll := left.Level()
+	rl := right.Level()
+	if rl == ll+1 {
+		rl = max(rl, right.right.Level()
 	}
 
 	switch {
