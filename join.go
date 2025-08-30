@@ -62,7 +62,7 @@ func join[K cmp.Ordered, V any](left, node, right *Tree[K, V]) *Tree[K, V] {
 	var ll, lr int
 	if left != nil || right == nil || right.right != nil || right.left != nil {
 		ll = left.Level()
-		rl = right.Level()
+		lr = right.Level()
 	}
 
 	switch {
