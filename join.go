@@ -64,21 +64,13 @@ func join[K cmp.Ordered, V any](left, node, right *Tree[K, V]) *Tree[K, V] {
 
 	switch {
 	case ll < rl:
-		left := join(left, node, right.left)
-		if left == right.left {
-			return right
-		}
 		copy := *right
-		copy.left = left
+		copy.left = join(left, node, right.left)
 		return copy.ins_rebalance()
 
 	case ll > rl:
-		right := join(left.right, node, right)
-		if right == left.right {
-			return left
-		}
 		copy := *left
-		copy.right = right
+		copy.right = join(left.right, node, right)
 		return copy.ins_rebalance()
 
 	default:
