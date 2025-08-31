@@ -61,8 +61,8 @@ func join[K cmp.Ordered, V any](left, node, right *Tree[K, V]) *Tree[K, V] {
 
 	llevel := left.Level()
 	rlevel := right.Level()
-	if rlevel == llevel+1 {
-		rlevel = min(rlevel, right.right.Level())
+	if rlevel == llevel+1 && llevel == right.right.Level() {
+		rlevel = llevel // avoid recursion, rebalancing
 	}
 
 	switch {
