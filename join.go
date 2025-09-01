@@ -59,16 +59,19 @@ func join[K cmp.Ordered, V any](left, node, right *Tree[K, V]) *Tree[K, V] {
 		return node
 	}
 
-	ll := left.Level()
-	rl := right.Level()
+	llevel := left.Level()
+	rlevel := right.Level()
+	if rlevel == llevel+1 && llevel == right.right.Level() {
+		rlevel = llevel // avoid recursion, rebalancing
+	}
 
 	switch {
-	case ll < rl:
+	case llevel < rlevel:
 		copy := *right
 		copy.left = join(left, node, right.left)
 		return copy.ins_rebalance()
 
-	case ll > rl:
+	case llevel > rlevel:
 		copy := *left
 		copy.right = join(left.right, node, right)
 		return copy.ins_rebalance()
@@ -79,7 +82,7 @@ func join[K cmp.Ordered, V any](left, node, right *Tree[K, V]) *Tree[K, V] {
 			right: right,
 			key:   node.key,
 			value: node.value,
-			level: int8(ll), // left.level + 1
+			level: int8(llevel), // left.level + 1
 		}
 	}
 }

@@ -9,7 +9,7 @@ on:
 
 jobs:
 
-  build:
+  test:
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -29,3 +29,4 @@ jobs:
 
     - name: Update coverage badge
       uses: ncruces/go-coverage-report@v0
+      if: github.event_name == 'push'
