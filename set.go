@@ -5,11 +5,11 @@ import "cmp"
 // Union returns the set union of two trees.
 // For keys in both trees, the value from t1 is retained.
 func Union[K cmp.Ordered, V any](t1, t2 *Tree[K, V]) *Tree[K, V] {
-	if t1 == nil {
-		return t2
-	}
-	if t2 == nil {
+	switch {
+	case t1 == t2 || t2 == nil:
 		return t1
+	case t1 == nil:
+		return t2
 	}
 	left, _, right := t2.Split(t1.key)
 	left = Union(t1.left, left)
@@ -20,10 +20,10 @@ func Union[K cmp.Ordered, V any](t1, t2 *Tree[K, V]) *Tree[K, V] {
 // Intersection returns the set intersection of two trees.
 // Values are taken from t1.
 func Intersection[K cmp.Ordered, V any](t1, t2 *Tree[K, V]) *Tree[K, V] {
-	if t1 == nil {
-		return nil
-	}
-	if t2 == nil {
+	switch {
+	case t1 == t2:
+		return t1
+	case t1 == nil || t2 == nil:
 		return nil
 	}
 	left, node, right := t1.Split(t2.key)
@@ -37,10 +37,10 @@ func Intersection[K cmp.Ordered, V any](t1, t2 *Tree[K, V]) *Tree[K, V] {
 
 // Difference returns the set difference of two trees.
 func Difference[K cmp.Ordered, V any](t1, t2 *Tree[K, V]) *Tree[K, V] {
-	if t1 == nil {
+	switch {
+	case t1 == t2 || t1 == nil:
 		return nil
-	}
-	if t2 == nil {
+	case t2 == nil:
 		return t1
 	}
 	left, _, right := t1.Split(t2.key)
@@ -51,10 +51,12 @@ func Difference[K cmp.Ordered, V any](t1, t2 *Tree[K, V]) *Tree[K, V] {
 
 // SymmetricDifference returns the set symmetric difference of two trees.
 func SymmetricDifference[K cmp.Ordered, V any](t1, t2 *Tree[K, V]) *Tree[K, V] {
-	if t1 == nil {
+	switch {
+	case t1 == t2:
+		return nil
+	case t1 == nil:
 		return t2
-	}
-	if t2 == nil {
+	case t2 == nil:
 		return t1
 	}
 	left, node, right := t1.Split(t2.key)

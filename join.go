@@ -88,10 +88,10 @@ func join[K cmp.Ordered, V any](left, node, right *Tree[K, V]) *Tree[K, V] {
 }
 
 func join2[K cmp.Ordered, V any](left, right *Tree[K, V]) *Tree[K, V] {
-	if left == nil {
+	switch {
+	case left == nil:
 		return right
-	}
-	if right == nil {
+	case right == nil:
 		return left
 	}
 	left, node := left.DeleteMax()
