@@ -10,8 +10,8 @@ func TestFilter(t *testing.T) {
 	aat = aat.Add(0).Add(1).Add(2)
 	aat = aat.Add(3).Add(4).Add(5)
 
-	even := aat.Filter(func (node *Tree[int, struct{}]) bool {
-		return node.key % 2 == 0
+	even := aat.Filter(func(node *Tree[int, struct{}]) bool {
+		return node.key%2 == 0
 	})
 
 	var j int
@@ -28,8 +28,8 @@ func TestPartition(t *testing.T) {
 	aat = aat.Add(0).Add(1).Add(2)
 	aat = aat.Add(3).Add(4).Add(5)
 
-	even, odd := aat.Partition(func (node *Tree[int, struct{}]) bool {
-		return node.key % 2 == 0
+	even, odd := aat.Partition(func(node *Tree[int, struct{}]) bool {
+		return node.key%2 == 0
 	})
 
 	var j int
@@ -73,12 +73,11 @@ func join3Fuzzer(t *testing.T, ints []byte) {
 	var left, right *Tree[int8, struct{}]
 
 	for _, b := range ints {
-		if i := int8(b); i > 0 {
-			right.Add(i)
-		} else if i < 0 {
-			left.Add(i)
-		} else {
-			break
+		switch i := int8(b); {
+		case i > 0:
+			right = right.Add(i)
+		case i < 0:
+			left = left.Add(i)
 		}
 	}
 
@@ -114,12 +113,11 @@ func join2Fuzzer(t *testing.T, ints []byte) {
 	var left, right *Tree[int8, struct{}]
 
 	for _, b := range ints {
-		if i := int8(b); i > 0 {
-			right.Add(i)
-		} else if i < 0 {
-			left.Add(i)
-		} else {
-			break
+		switch i := int8(b); {
+		case i > 0:
+			right = right.Add(i)
+		case i < 0:
+			left = left.Add(i)
 		}
 	}
 
