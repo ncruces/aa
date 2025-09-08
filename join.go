@@ -5,7 +5,8 @@ import "cmp"
 // Split partitions this tree around a key. It returns
 // a left tree with keys less than key,
 // a right tree with keys greater than key,
-// and the node for that key.
+// and the node for the key
+// (or nil if no such key exists in this tree).
 func (tree *Tree[K, V]) Split(key K) (left, node, right *Tree[K, V]) {
 	if tree == nil {
 		return nil, nil, nil

@@ -6,13 +6,13 @@ import "cmp"
 // Tree is an immutable AA tree,
 // a form of self-balancing binary search tree.
 //
-// Use *Tree as reference type; the zero value for *Tree (nil) is the empty tree:
+// Use *Tree as a reference type; the zero value for *Tree (nil) is the empty tree:
 //
 //	var empty *aa.Tree[int, string]
 //	one := empty.Put(1, "one")
 //	one.Has(1) ⟹ true
 //
-// Note: the zero value for Tree{} is a valid, but non-empty, tree.
+// Note: the zero value for Tree{} is a valid — but non-empty — tree.
 type Tree[K cmp.Ordered, V any] struct {
 	left  *Tree[K, V]
 	right *Tree[K, V]
