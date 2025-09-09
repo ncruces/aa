@@ -5,6 +5,7 @@ import (
 	"slices"
 )
 
+// MakeSet builds a tree from a set of keys.
 func MakeSet[K cmp.Ordered](keys ...K) *Tree[K, struct{}] {
 	if !increasing(keys) {
 		keys = slices.Clone(keys)
@@ -14,6 +15,7 @@ func MakeSet[K cmp.Ordered](keys ...K) *Tree[K, struct{}] {
 	return makeTree[K, struct{}](keys, nil)
 }
 
+// MakeMap builds a tree from a key-value map.
 func MakeMap[K cmp.Ordered, V any](m map[K]V) *Tree[K, V] {
 	i, keys := 0, make([]K, len(m))
 	for k := range m {
@@ -25,16 +27,22 @@ func MakeMap[K cmp.Ordered, V any](m map[K]V) *Tree[K, V] {
 }
 
 func makeTree[K cmp.Ordered, V any](keys []K, m map[K]V) *Tree[K, V] {
-	switch len(keys) {
-	case 0:
+	if len(keys) == 0 {
 		return nil
-	case 1:
-		return &Tree[K, V]{key: keys[0], value: m[keys[0]]}
 	}
-	key := keys[len(keys)/2]
-	left := makeTree(keys[:len(keys)/2], m)
-	right := makeTree(keys[len(keys)/2+1:], m)
-	return join(left, &Tree[K, V]{key: key, value: m[key]}, right)
+
+	mid := (len(keys) - 1) / 2
+	left := makeTree(keys[:mid], m)
+	right := makeTree(keys[mid+1:], m)
+	key := keys[mid]
+
+	return &Tree[K, V]{
+		left:  left,
+		right: right,
+		key:   key,
+		value: m[key],
+		level: int8(left.Level()), // left.level + 1
+	}
 }
 
 func increasing[K cmp.Ordered](keys []K) bool {

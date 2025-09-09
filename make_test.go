@@ -1,11 +1,9 @@
 package aa
 
-import (
-	"testing"
-)
+import "testing"
 
-func TestMakeSet(t *testing.T) {
-	aat := MakeSet(0, 2, 4, 6, 5, 3, 1)
+func TestMakeSet_inc(t *testing.T) {
+	aat := MakeSet(0, 1, 2, 3, 4, 5, 6)
 
 	if n := aat; n.key != 3 || n.Level() != 3 {
 		t.Fatalf("%d,%d", n.key, n.Level())
@@ -30,15 +28,62 @@ func TestMakeSet(t *testing.T) {
 	}
 }
 
-func BenchmarkMakeSet(b *testing.B) {
-	var slice []int
-	// r := rand.New(rand.NewSource(42))
-	// for range 1000 * b.N {
-	// 	slice = append(slice, r.Int())
-	// }
-	for i := range 1000 * b.N {
-		slice = append(slice, i)
+func TestMakeSet_dec(t *testing.T) {
+	aat := MakeSet(6, 5, 4, 3, 2, 1, 0)
+
+	if n := aat; n.key != 3 || n.Level() != 3 {
+		t.Fatalf("%d,%d", n.key, n.Level())
 	}
-	b.ResetTimer()
-	MakeSet(slice...).check()
+	if n := aat.left; n.key != 1 || n.Level() != 2 {
+		t.Fatalf("%d,%d", n.key, n.Level())
+	}
+	if n := aat.right; n.key != 5 || n.Level() != 2 {
+		t.Fatalf("%d,%d", n.key, n.Level())
+	}
+	if n := aat.left.left; n.key != 0 || n.Level() != 1 {
+		t.Fatalf("%d,%d", n.key, n.Level())
+	}
+	if n := aat.left.right; n.key != 2 || n.Level() != 1 {
+		t.Fatalf("%d,%d", n.key, n.Level())
+	}
+	if n := aat.right.left; n.key != 4 || n.Level() != 1 {
+		t.Fatalf("%d,%d", n.key, n.Level())
+	}
+	if n := aat.right.right; n.key != 6 || n.Level() != 1 {
+		t.Fatalf("%d,%d", n.key, n.Level())
+	}
+}
+
+func TestMakeMap(t *testing.T) {
+	aat := MakeMap(map[int]string{
+		0: "zero",
+		1: "one",
+		2: "two",
+		3: "three",
+		4: "four",
+		5: "five",
+		6: "six",
+	})
+
+	if n := aat; n.key != 3 || n.Level() != 3 {
+		t.Fatalf("%d,%d", n.key, n.Level())
+	}
+	if n := aat.left; n.key != 1 || n.Level() != 2 {
+		t.Fatalf("%d,%d", n.key, n.Level())
+	}
+	if n := aat.right; n.key != 5 || n.Level() != 2 {
+		t.Fatalf("%d,%d", n.key, n.Level())
+	}
+	if n := aat.left.left; n.key != 0 || n.Level() != 1 {
+		t.Fatalf("%d,%d", n.key, n.Level())
+	}
+	if n := aat.left.right; n.key != 2 || n.Level() != 1 {
+		t.Fatalf("%d,%d", n.key, n.Level())
+	}
+	if n := aat.right.left; n.key != 4 || n.Level() != 1 {
+		t.Fatalf("%d,%d", n.key, n.Level())
+	}
+	if n := aat.right.right; n.key != 6 || n.Level() != 1 {
+		t.Fatalf("%d,%d", n.key, n.Level())
+	}
 }
