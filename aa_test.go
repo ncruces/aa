@@ -328,7 +328,7 @@ func FuzzTree(f *testing.F) {
 	})
 }
 
-func BenchmarkAdd(b *testing.B) {
+func BenchmarkAddDelete(b *testing.B) {
 	var aat *Tree[int, string]
 
 	r := rand.New(rand.NewSource(42))

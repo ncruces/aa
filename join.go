@@ -63,7 +63,7 @@ func join[K cmp.Ordered, V any](left, node, right *Tree[K, V]) *Tree[K, V] {
 	llevel := left.Level()
 	rlevel := right.Level()
 	if rlevel == llevel+1 && llevel == right.right.Level() {
-		rlevel = llevel // avoid recursion, rebalancing
+		rlevel = llevel // Avoid recursion, rebalancing.
 	}
 
 	switch {
@@ -95,6 +95,7 @@ func join2[K cmp.Ordered, V any](left, right *Tree[K, V]) *Tree[K, V] {
 	case right == nil:
 		return left
 	}
-	left, node := left.DeleteMax()
+	// Both DeleteMin/DeleteMax work; DeleteMin minimizes allocs.
+	right, node := right.DeleteMin()
 	return join(left, node, right)
 }

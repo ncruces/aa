@@ -147,6 +147,7 @@ func (tree *Tree[K, V]) Get(key K) (value V, found bool) {
 	// Floor uses 2-way search, which is faster for strings:
 	//   https://go.dev/issue/71270
 	//   https://user.it.uu.se/~arnea/ps/searchproc.pdf
+	// Both Floor/Ceil work; Floor is faster since AA trees lean right.
 	node := tree.Floor(key)
 	if node != nil && (key == node.key || key != key) {
 		return node.value, true
@@ -248,12 +249,18 @@ func (tree *Tree[K, V]) Delete(key K) *Tree[K, V] {
 		return copy.del_rebalance()
 
 	default:
+		// If tree.right is nil, tree.left is too.
 		if tree.left == nil {
 			return tree.right
 		}
-		var heir *Tree[K, V]
 		copy := *tree
-		copy.left, heir = tree.left.DeleteMax()
+		var heir *Tree[K, V]
+		// Either works; this saves a few allocs.
+		if copy.right.level == copy.level {
+			copy.right, heir = copy.right.DeleteMin()
+		} else {
+			copy.left, heir = copy.left.DeleteMax()
+		}
 		copy.key = heir.key
 		copy.value = heir.value
 		return copy.del_rebalance()
@@ -281,7 +288,7 @@ func (tree *Tree[K, V]) DeleteMax() (_, node *Tree[K, V]) {
 		return nil, nil
 	}
 	if tree.right == nil {
-		return tree.left, tree
+		return nil, tree // tree.left, tree
 	}
 	copy := *tree
 	copy.right, node = tree.right.DeleteMax()

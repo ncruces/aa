@@ -18,8 +18,8 @@ func MakeSet[K cmp.Ordered](keys ...K) *Tree[K, struct{}] {
 // MakeMap builds a tree from a key-value map.
 func MakeMap[K cmp.Ordered, V any](m map[K]V) *Tree[K, V] {
 	i, keys := 0, make([]K, len(m))
-	for k := range m {
-		keys[i] = k
+	for key := range m {
+		keys[i] = key
 		i++
 	}
 	slices.Sort(keys)
@@ -31,11 +31,12 @@ func makeTree[K cmp.Ordered, V any](keys []K, m map[K]V) *Tree[K, V] {
 		return nil
 	}
 
+	// AA trees lean right, so round down.
 	mid := (len(keys) - 1) / 2
 	left := makeTree(keys[:mid], m)
 	right := makeTree(keys[mid+1:], m)
-	key := keys[mid]
 
+	key := keys[mid]
 	return &Tree[K, V]{
 		left:  left,
 		right: right,
@@ -52,4 +53,21 @@ func increasing[K cmp.Ordered](keys []K) bool {
 		}
 	}
 	return true
+}
+
+// Collect collects key-value pairs from this tree
+// into a new map and returns it.
+func (tree *Tree[K, V]) Collect() map[K]V {
+	m := make(map[K]V, 1<<tree.Level())
+	tree.collect(m)
+	return m
+}
+
+func (tree *Tree[K, V]) collect(m map[K]V) {
+	// AA trees lean right, so recurse to the left.
+	for tree != nil {
+		m[tree.key] = tree.value
+		tree.left.collect(m)
+		tree = tree.right
+	}
 }

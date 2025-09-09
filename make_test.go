@@ -1,6 +1,9 @@
 package aa
 
-import "testing"
+import (
+	"maps"
+	"testing"
+)
 
 func TestMakeSet_inc(t *testing.T) {
 	aat := MakeSet(0, 1, 2, 3, 4, 5, 6)
@@ -29,7 +32,7 @@ func TestMakeSet_inc(t *testing.T) {
 }
 
 func TestMakeSet_dec(t *testing.T) {
-	aat := MakeSet(6, 5, 4, 3, 2, 1, 0)
+	aat := MakeSet(6, 5, 5, 4, 3, 3, 2, 1, 1, 0)
 
 	if n := aat; n.key != 3 || n.Level() != 3 {
 		t.Fatalf("%d,%d", n.key, n.Level())
@@ -85,5 +88,22 @@ func TestMakeMap(t *testing.T) {
 	}
 	if n := aat.right.right; n.key != 6 || n.Level() != 1 {
 		t.Fatalf("%d,%d", n.key, n.Level())
+	}
+}
+
+func TestTree_Collect(t *testing.T) {
+	m1 := map[int]string{
+		0: "zero",
+		1: "one",
+		2: "two",
+		3: "three",
+		4: "four",
+		5: "five",
+		6: "six",
+	}
+	m2 := MakeMap(m1).Collect()
+
+	if !maps.Equal(m1, m2) {
+		t.Error(m1, m2)
 	}
 }

@@ -1,7 +1,7 @@
 package aa
 
 func (tree *Tree[K, V]) ins_rebalance() *Tree[K, V] {
-	if tree.need_raise() { // avoid 2 rotations and allocs
+	if tree.need_raise() { // Avoid 2 rotations and allocs.
 		tree.level++
 		return tree
 	}
