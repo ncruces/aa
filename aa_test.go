@@ -297,6 +297,20 @@ func TestTree_Delete_missing(t *testing.T) {
 	}
 }
 
+func TestTree_Delete_pred(t *testing.T) {
+	var aat *Tree[int, struct{}]
+	aat = aat.Add(1).Add(3).Add(5)
+
+	if a, b := aat, aat.Delete(3, func(node *Tree[int, struct{}]) bool {
+		if aat != node {
+			t.Fatalf("%p ≠ %p", aat, node)
+		}
+		return false
+	}); a != b {
+		t.Fatalf("%p ≠ %p", a, b)
+	}
+}
+
 func FuzzTree(f *testing.F) {
 	f.Fuzz(func(t *testing.T, cmds []byte) {
 		var aat *Tree[byte, byte]

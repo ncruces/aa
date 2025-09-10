@@ -222,16 +222,25 @@ func (tree *Tree[K, V]) Patch(key K, update func(node *Tree[K, V]) (value V, ok 
 }
 
 // Delete returns a (possibly) modified tree with key removed from it.
+// The optional pred is called to confirm deletion.
 //
 //	tree.Delete(key).Has(key) ⟹ false
-func (tree *Tree[K, V]) Delete(key K) *Tree[K, V] {
+func (tree *Tree[K, V]) Delete(key K, pred ...func(node *Tree[K, V]) bool) *Tree[K, V] {
+	var p func(*Tree[K, V]) bool
+	if len(pred) > 0 {
+		p = pred[0]
+	}
+	return tree.delete(key, p)
+}
+
+func (tree *Tree[K, V]) delete(key K, pred func(node *Tree[K, V]) bool) *Tree[K, V] {
 	if tree == nil {
 		return nil
 	}
 
 	switch cmp.Compare(key, tree.key) {
 	case -1:
-		left := tree.left.Delete(key)
+		left := tree.left.delete(key, pred)
 		if left == tree.left {
 			return tree
 		}
@@ -240,7 +249,7 @@ func (tree *Tree[K, V]) Delete(key K) *Tree[K, V] {
 		return copy.del_rebalance()
 
 	case +1:
-		right := tree.right.Delete(key)
+		right := tree.right.delete(key, pred)
 		if right == tree.right {
 			return tree
 		}
@@ -249,6 +258,10 @@ func (tree *Tree[K, V]) Delete(key K) *Tree[K, V] {
 		return copy.del_rebalance()
 
 	default:
+		if pred != nil && !pred(tree) {
+			return tree
+		}
+
 		// If tree.right is nil, tree.left is too.
 		if tree.left == nil {
 			return tree.right
