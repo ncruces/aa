@@ -78,13 +78,7 @@ func join[K cmp.Ordered, V any](left, node, right *Tree[K, V]) *Tree[K, V] {
 		return copy.ins_rebalance()
 
 	default:
-		return &Tree[K, V]{
-			left:  left,
-			right: right,
-			key:   node.key,
-			value: node.value,
-			level: int8(llevel), // left.level + 1
-		}
+		return makeNode(node.key, node.value, left, right)
 	}
 }
 

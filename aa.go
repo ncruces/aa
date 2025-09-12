@@ -18,7 +18,7 @@ type Tree[K cmp.Ordered, V any] struct {
 	right *Tree[K, V]
 	key   K
 	value V
-	level int8
+	balance
 }
 
 // Key returns the key at the root of this tree.
@@ -69,18 +69,15 @@ func (tree *Tree[K, V]) Level() int {
 	if tree == nil {
 		return 0
 	}
-	return int(tree.level) + 1
+	return tree.balance.level()
 }
 
-// Len counts the number of nodes in this tree.
+// Len returns the number of nodes in this tree.
 func (tree *Tree[K, V]) Len() int {
-	// AA trees lean right, so recurse to the left.
-	var len int
-	for tree != nil {
-		len += tree.left.Len() + 1
-		tree = tree.right
+	if tree == nil {
+		return 0
 	}
-	return len
+	return tree.balance.len()
 }
 
 // Min finds the least key in this tree,
@@ -266,10 +263,11 @@ func (tree *Tree[K, V]) delete(key K, pred func(node *Tree[K, V]) bool) *Tree[K,
 		if tree.left == nil {
 			return tree.right
 		}
+
 		copy := *tree
 		var heir *Tree[K, V]
 		// Either works; this saves a few allocs.
-		if copy.right.level == copy.level {
+		if copy.Level() == copy.right.Level() {
 			copy.right, heir = copy.right.DeleteMin()
 		} else {
 			copy.left, heir = copy.left.DeleteMax()

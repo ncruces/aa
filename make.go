@@ -37,15 +37,20 @@ func makeTree[K cmp.Ordered, V any](keys []K, m map[K]V) *Tree[K, V] {
 	right := makeTree(keys[mid+1:], m)
 
 	key := keys[mid]
-	return &Tree[K, V]{
-		left:  left,
-		right: right,
-		key:   key,
-		value: m[key],
-		level: int8(left.Level()), // left.level + 1
-	}
+	return makeNode(key, m[key], left, right)
 }
 
+func makeNode[K cmp.Ordered, V any](k K, v V, left, right *Tree[K, V]) *Tree[K, V] {
+	node := Tree[K, V]{
+		left:  left,
+		right: right,
+		key:   k,
+		value: v,
+	}
+	return node.fixup()
+}
+
+// Increasing tests if keys are in strictly increasing order.
 func increasing[K cmp.Ordered](keys []K) bool {
 	for i := len(keys) - 1; i > 0; i-- {
 		if !cmp.Less(keys[i-1], keys[i]) {
@@ -64,7 +69,7 @@ func (tree *Tree[K, V]) Collect() map[K]V {
 }
 
 func (tree *Tree[K, V]) collect(m map[K]V) {
-	// AA trees lean right, so recurse to the left.
+	// AA trees lean right, so recurse left.
 	for tree != nil {
 		m[tree.key] = tree.value
 		tree.left.collect(m)
