@@ -38,6 +38,7 @@ func (tree *Tree[K, V]) need_raise() bool {
 
 func (tree *Tree[K, V]) skew() *Tree[K, V] {
 	if tree.need_skew() {
+		// Rotate right.
 		copy := *tree.left
 		tree.left = copy.right
 		copy.right = tree.fixup()
@@ -48,20 +49,22 @@ func (tree *Tree[K, V]) skew() *Tree[K, V] {
 
 func (tree *Tree[K, V]) skew_rec() *Tree[K, V] {
 	if tree.need_skew() {
+		// Rotate right.
 		copy := *tree.left
 		tree.left = copy.right
-		copy.right = tree.skew_rec()
+		copy.right = tree.skew_rec() // Recurse.
 		tree = &copy
 	}
 	if tree.right.need_skew() {
 		node := *tree.right
-		tree.right = node.skew_rec()
+		tree.right = node.skew_rec() // Recurse.
 	}
 	return tree.fixup()
 }
 
 func (tree *Tree[K, V]) split() *Tree[K, V] {
 	if tree.need_split() {
+		// Rotate left.
 		copy := *tree.right
 		tree.right = copy.left
 		copy.left = tree.fixup()
@@ -72,6 +75,7 @@ func (tree *Tree[K, V]) split() *Tree[K, V] {
 
 func (tree *Tree[K, V]) split_rec() *Tree[K, V] {
 	if tree.need_split() {
+		// Rotate left.
 		copy := *tree.right
 		tree.right = copy.left
 		copy.left = tree.fixup()
@@ -79,7 +83,7 @@ func (tree *Tree[K, V]) split_rec() *Tree[K, V] {
 	}
 	if tree.right.need_split() {
 		node := *tree.right
-		tree.right = node.split()
+		tree.right = node.split() // Recurse once.
 	}
 	return tree.fixup()
 }

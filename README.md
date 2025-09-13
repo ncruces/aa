@@ -7,4 +7,5 @@
 A [persistent](https://en.wikipedia.org/wiki/Persistent_data_structure) implementation of
 [AA Trees](https://en.wikipedia.org/wiki/AA_tree)
 ([paper](https://user.it.uu.se/~arnea/ps/simp.pdf)),
-including the [join-based tree algorithms](https://en.wikipedia.org/wiki/Join-based_tree_algorithms).
+including the [join-based tree algorithms](https://en.wikipedia.org/wiki/Join-based_tree_algorithms),
+and augmented with [order statistcs](https://en.wikipedia.org/wiki/Order_statistic_tree).
