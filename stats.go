@@ -2,7 +2,8 @@ package aa
 
 import "cmp"
 
-// Select finds the node at index i of this tree and returns it.
+// Select finds the node at index i of this tree and returns it
+// (or nil if i is out of range).
 func (tree *Tree[K, V]) Select(i int) *Tree[K, V] {
 	for tree != nil {
 		p := tree.left.Len()
@@ -21,6 +22,8 @@ func (tree *Tree[K, V]) Select(i int) *Tree[K, V] {
 
 // Rank finds the rank of key,
 // the number of nodes in this tree less than key.
+//
+//	tree.Rank(tree.Select(i).Key()) ⟹ i, iff 0 ≤ i < tree.Len()
 func (tree *Tree[K, V]) Rank(key K) int {
 	k := 0
 	for tree != nil {
