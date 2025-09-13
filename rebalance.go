@@ -2,91 +2,88 @@ package aa
 
 func (tree *Tree[K, V]) ins_rebalance() *Tree[K, V] {
 	if tree.need_raise() { // Avoid 2 rotations and allocs.
-		tree.level++
-		return tree
+		return tree.fixup()
 	}
 	return tree.skew().split()
 }
 
 func (tree *Tree[K, V]) del_rebalance() *Tree[K, V] {
-	var want int8
-	if tree.left != nil && tree.right != nil {
-		want = 1 + min(tree.left.level, tree.right.level)
-	}
-	if tree.level > want {
-		tree.level = want
-		if tree.right != nil && tree.right.level > want {
+	max := 1 + min(tree.left.Level(), tree.right.Level())
+	if tree.Level() > max {
+		tree.setLevel(max)
+		if tree.right.Level() > max {
 			copy := *tree.right
-			copy.level = want
+			copy.setLevel(max)
 			tree.right = &copy
 		}
 		return tree.skew_rec().split_rec()
 	}
-	return tree
+	return tree.fixup()
 }
 
 func (tree *Tree[K, V]) need_skew() bool {
-	return tree != nil && tree.left != nil &&
-		tree.left.level == tree.level
+	return tree != nil && tree.Level() == tree.left.Level()
 }
 
 func (tree *Tree[K, V]) need_split() bool {
-	return tree != nil && tree.right != nil && tree.right.right != nil &&
-		tree.right.right.level == tree.level
+	return tree != nil && tree.right != nil &&
+		tree.Level() == tree.right.right.Level()
 }
 
 func (tree *Tree[K, V]) need_raise() bool {
-	return tree != nil && tree.left != nil && tree.right != nil &&
-		tree.left.level == tree.level &&
-		tree.right.level == tree.level
+	return tree != nil &&
+		tree.Level() == tree.left.Level() &&
+		tree.Level() == tree.right.Level()
 }
 
 func (tree *Tree[K, V]) skew() *Tree[K, V] {
 	if tree.need_skew() {
+		// Rotate right.
 		copy := *tree.left
 		tree.left = copy.right
-		copy.right = tree
-		return &copy
+		copy.right = tree.fixup()
+		tree = &copy
 	}
-	return tree
+	return tree.fixup()
 }
 
 func (tree *Tree[K, V]) skew_rec() *Tree[K, V] {
 	if tree.need_skew() {
+		// Rotate right.
 		copy := *tree.left
 		tree.left = copy.right
-		copy.right = tree.skew_rec()
-		return &copy
+		copy.right = tree.skew_rec() // Recurse.
+		tree = &copy
 	}
 	if tree.right.need_skew() {
 		node := *tree.right
-		tree.right = node.skew_rec()
+		tree.right = node.skew_rec() // Recurse.
 	}
-	return tree
+	return tree.fixup()
 }
 
 func (tree *Tree[K, V]) split() *Tree[K, V] {
 	if tree.need_split() {
+		// Rotate left.
 		copy := *tree.right
 		tree.right = copy.left
-		copy.left = tree
-		copy.level++
-		return &copy
+		copy.left = tree.fixup()
+		tree = &copy
 	}
-	return tree
+	return tree.fixup()
 }
 
 func (tree *Tree[K, V]) split_rec() *Tree[K, V] {
 	if tree.need_split() {
+		// Rotate left.
 		copy := *tree.right
 		tree.right = copy.left
-		copy.left = tree
-		copy.level++
-		if copy.right.need_split() {
-			node := *copy.right
-			copy.right = node.split()
-		}
-		return &copy
+		copy.left = tree.fixup()
+		tree = &copy
 	}
-	return tree
+	if tree.right.need_split() {
+		node := *tree.right
+		tree.right = node.split() // Recurse once.
+	}
+	return tree.fixup()
 }

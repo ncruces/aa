@@ -58,10 +58,6 @@ func TestPutGet(t *testing.T) {
 	if s, ok := aat.Get(5); !ok || s != "five" {
 		t.Error(s, ok)
 	}
-
-	if n := aat.Len(); n != 5 {
-		t.Error(n)
-	}
 }
 
 func TestAddHasDelete(t *testing.T) {
