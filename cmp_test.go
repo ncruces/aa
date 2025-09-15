@@ -94,17 +94,17 @@ func TestSubset(t *testing.T) {
 }
 
 func TestEqualSubset_value(t *testing.T) {
-	var aat *Tree[int, string]
-	aat = aat.Put(1, "one").Put(3, "three").Put(5, "five")
-	aat = aat.Put(4, "four").Put(2, "two")
+	var tt *Tree[int, string]
+	tt = tt.Put(1, "one").Put(3, "three").Put(5, "five")
+	tt = tt.Put(4, "four").Put(2, "two")
 
-	if Equal(aat, aat.Put(3, "THREE")) {
+	if Equal(tt, tt.Put(3, "THREE")) {
 		t.Error()
 	}
-	if Subset(aat, aat.Put(3, "THREE")) {
+	if Subset(tt, tt.Put(3, "THREE")) {
 		t.Error()
 	}
-	if !Overlap(aat, aat.Put(3, "THREE")) {
+	if !Overlap(tt, tt.Put(3, "THREE")) {
 		t.Error()
 	}
 }

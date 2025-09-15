@@ -6,61 +6,61 @@ import (
 )
 
 func TestMakeSet_inc(t *testing.T) {
-	aat := MakeSet(0, 1, 2, 3, 4, 5, 6)
-	aat.check()
+	tt := MakeSet(0, 1, 2, 3, 4, 5, 6)
+	tt.check()
 
-	if n := aat; n.key != 3 || n.Level() != 3 {
+	if n := tt; n.key != 3 || n.Level() != 3 {
 		t.Fatalf("%d,%d", n.key, n.Level())
 	}
-	if n := aat.left; n.key != 1 || n.Level() != 2 {
+	if n := tt.left; n.key != 1 || n.Level() != 2 {
 		t.Fatalf("%d,%d", n.key, n.Level())
 	}
-	if n := aat.right; n.key != 5 || n.Level() != 2 {
+	if n := tt.right; n.key != 5 || n.Level() != 2 {
 		t.Fatalf("%d,%d", n.key, n.Level())
 	}
-	if n := aat.left.left; n.key != 0 || n.Level() != 1 {
+	if n := tt.left.left; n.key != 0 || n.Level() != 1 {
 		t.Fatalf("%d,%d", n.key, n.Level())
 	}
-	if n := aat.left.right; n.key != 2 || n.Level() != 1 {
+	if n := tt.left.right; n.key != 2 || n.Level() != 1 {
 		t.Fatalf("%d,%d", n.key, n.Level())
 	}
-	if n := aat.right.left; n.key != 4 || n.Level() != 1 {
+	if n := tt.right.left; n.key != 4 || n.Level() != 1 {
 		t.Fatalf("%d,%d", n.key, n.Level())
 	}
-	if n := aat.right.right; n.key != 6 || n.Level() != 1 {
+	if n := tt.right.right; n.key != 6 || n.Level() != 1 {
 		t.Fatalf("%d,%d", n.key, n.Level())
 	}
 }
 
 func TestMakeSet_dec(t *testing.T) {
-	aat := MakeSet(6, 5, 5, 4, 3, 3, 2, 1, 1, 0)
-	aat.check()
+	tt := MakeSet(6, 5, 5, 4, 3, 3, 2, 1, 1, 0)
+	tt.check()
 
-	if n := aat; n.key != 3 || n.Level() != 3 {
+	if n := tt; n.key != 3 || n.Level() != 3 {
 		t.Fatalf("%d,%d", n.key, n.Level())
 	}
-	if n := aat.left; n.key != 1 || n.Level() != 2 {
+	if n := tt.left; n.key != 1 || n.Level() != 2 {
 		t.Fatalf("%d,%d", n.key, n.Level())
 	}
-	if n := aat.right; n.key != 5 || n.Level() != 2 {
+	if n := tt.right; n.key != 5 || n.Level() != 2 {
 		t.Fatalf("%d,%d", n.key, n.Level())
 	}
-	if n := aat.left.left; n.key != 0 || n.Level() != 1 {
+	if n := tt.left.left; n.key != 0 || n.Level() != 1 {
 		t.Fatalf("%d,%d", n.key, n.Level())
 	}
-	if n := aat.left.right; n.key != 2 || n.Level() != 1 {
+	if n := tt.left.right; n.key != 2 || n.Level() != 1 {
 		t.Fatalf("%d,%d", n.key, n.Level())
 	}
-	if n := aat.right.left; n.key != 4 || n.Level() != 1 {
+	if n := tt.right.left; n.key != 4 || n.Level() != 1 {
 		t.Fatalf("%d,%d", n.key, n.Level())
 	}
-	if n := aat.right.right; n.key != 6 || n.Level() != 1 {
+	if n := tt.right.right; n.key != 6 || n.Level() != 1 {
 		t.Fatalf("%d,%d", n.key, n.Level())
 	}
 }
 
 func TestMakeMap(t *testing.T) {
-	aat := MakeMap(map[int]string{
+	tt := MakeMap(map[int]string{
 		0: "zero",
 		1: "one",
 		2: "two",
@@ -69,27 +69,27 @@ func TestMakeMap(t *testing.T) {
 		5: "five",
 		6: "six",
 	})
-	aat.check()
+	tt.check()
 
-	if n := aat; n.key != 3 || n.Level() != 3 {
+	if n := tt; n.key != 3 || n.Level() != 3 {
 		t.Fatalf("%d,%d", n.key, n.Level())
 	}
-	if n := aat.left; n.key != 1 || n.Level() != 2 {
+	if n := tt.left; n.key != 1 || n.Level() != 2 {
 		t.Fatalf("%d,%d", n.key, n.Level())
 	}
-	if n := aat.right; n.key != 5 || n.Level() != 2 {
+	if n := tt.right; n.key != 5 || n.Level() != 2 {
 		t.Fatalf("%d,%d", n.key, n.Level())
 	}
-	if n := aat.left.left; n.key != 0 || n.Level() != 1 {
+	if n := tt.left.left; n.key != 0 || n.Level() != 1 {
 		t.Fatalf("%d,%d", n.key, n.Level())
 	}
-	if n := aat.left.right; n.key != 2 || n.Level() != 1 {
+	if n := tt.left.right; n.key != 2 || n.Level() != 1 {
 		t.Fatalf("%d,%d", n.key, n.Level())
 	}
-	if n := aat.right.left; n.key != 4 || n.Level() != 1 {
+	if n := tt.right.left; n.key != 4 || n.Level() != 1 {
 		t.Fatalf("%d,%d", n.key, n.Level())
 	}
-	if n := aat.right.right; n.key != 6 || n.Level() != 1 {
+	if n := tt.right.right; n.key != 6 || n.Level() != 1 {
 		t.Fatalf("%d,%d", n.key, n.Level())
 	}
 }

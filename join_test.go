@@ -6,11 +6,11 @@ import (
 )
 
 func TestFilter(t *testing.T) {
-	var aat *Tree[int, struct{}]
-	aat = aat.Add(0).Add(1).Add(2)
-	aat = aat.Add(3).Add(4).Add(5)
+	var tt *Tree[int, struct{}]
+	tt = tt.Add(0).Add(1).Add(2)
+	tt = tt.Add(3).Add(4).Add(5)
 
-	even := aat.Filter(func(node *Tree[int, struct{}]) bool {
+	even := tt.Filter(func(node *Tree[int, struct{}]) bool {
 		return node.key%2 == 0
 	})
 
@@ -24,11 +24,11 @@ func TestFilter(t *testing.T) {
 }
 
 func TestPartition(t *testing.T) {
-	var aat *Tree[int, struct{}]
-	aat = aat.Add(0).Add(1).Add(2)
-	aat = aat.Add(3).Add(4).Add(5)
+	var tt *Tree[int, struct{}]
+	tt = tt.Add(0).Add(1).Add(2)
+	tt = tt.Add(3).Add(4).Add(5)
 
-	even, odd := aat.Partition(func(node *Tree[int, struct{}]) bool {
+	even, odd := tt.Partition(func(node *Tree[int, struct{}]) bool {
 		return node.key%2 == 0
 	})
 
@@ -50,11 +50,11 @@ func TestPartition(t *testing.T) {
 }
 
 func Test_join(t *testing.T) {
-	var aat *Tree[int, struct{}]
-	aat = aat.Add(0).Add(1).Add(2)
+	var tt *Tree[int, struct{}]
+	tt = tt.Add(0).Add(1).Add(2)
 
-	if a := join(aat.left, aat, aat.right); a != aat {
-		t.Errorf("%p ≠ %p", a, aat)
+	if a := join(tt.left, tt, tt.right); a != tt {
+		t.Errorf("%p ≠ %p", a, tt)
 	}
 
 	r := rand.New(rand.NewSource(42))
@@ -87,14 +87,14 @@ func join3Fuzzer(t *testing.T, ints []byte) {
 }
 
 func Test_join2(t *testing.T) {
-	var aat *Tree[int, struct{}]
-	aat = aat.Add(0).Add(1).Add(2)
+	var tt *Tree[int, struct{}]
+	tt = tt.Add(0).Add(1).Add(2)
 
-	if a := join2(aat, nil); a != aat {
-		t.Errorf("%p ≠ %p", a, aat)
+	if a := join2(tt, nil); a != tt {
+		t.Errorf("%p ≠ %p", a, tt)
 	}
-	if a := join2(nil, aat); a != aat {
-		t.Errorf("%p ≠ %p", a, aat)
+	if a := join2(nil, tt); a != tt {
+		t.Errorf("%p ≠ %p", a, tt)
 	}
 
 	r := rand.New(rand.NewSource(42))
