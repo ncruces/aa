@@ -7,6 +7,7 @@ import (
 
 func TestMakeSet_inc(t *testing.T) {
 	aat := MakeSet(0, 1, 2, 3, 4, 5, 6)
+	aat.check()
 
 	if n := aat; n.key != 3 || n.Level() != 3 {
 		t.Fatalf("%d,%d", n.key, n.Level())
@@ -33,6 +34,7 @@ func TestMakeSet_inc(t *testing.T) {
 
 func TestMakeSet_dec(t *testing.T) {
 	aat := MakeSet(6, 5, 5, 4, 3, 3, 2, 1, 1, 0)
+	aat.check()
 
 	if n := aat; n.key != 3 || n.Level() != 3 {
 		t.Fatalf("%d,%d", n.key, n.Level())
@@ -67,6 +69,7 @@ func TestMakeMap(t *testing.T) {
 		5: "five",
 		6: "six",
 	})
+	aat.check()
 
 	if n := aat; n.key != 3 || n.Level() != 3 {
 		t.Fatalf("%d,%d", n.key, n.Level())

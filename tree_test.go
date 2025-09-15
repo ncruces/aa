@@ -8,7 +8,7 @@ import (
 
 // https://web.archive.org/web/20181104022612/eternallyconfuzzled.com/tuts/datastructures/jsw_tut_andersson.aspx
 
-func TestKeyValueLevelLeftRight(t *testing.T) {
+func TestKeyValueLeftRight(t *testing.T) {
 	var aat *Tree[int, string]
 
 	if lvl := aat.Level(); lvl != 0 {
@@ -45,6 +45,7 @@ func TestPutGet(t *testing.T) {
 	aat = aat.Put(1, "one").Put(3, "three").Put(5, "five")
 	aat = aat.Put(4, "four").Put(2, "two")
 	aat = aat.Put(3, "THREE")
+	aat.check()
 
 	if s, ok := aat.Get(0); ok {
 		t.Error(s, ok)
@@ -82,6 +83,7 @@ func TestAddHasDelete(t *testing.T) {
 func TestAddFloorCeil(t *testing.T) {
 	var aat *Tree[int, struct{}]
 	aat = aat.Add(1).Add(3).Add(5)
+	aat.check()
 
 	if n := aat.Floor(0); n != nil {
 		t.Error()
@@ -116,6 +118,7 @@ func TestAddPatchGet(t *testing.T) {
 
 	aat = aat.Put(1, "one").Put(3, "three").Put(5, "five")
 	aat = aat.Patch(0, upper).Patch(3, upper)
+	aat.check()
 
 	if s, ok := aat.Get(0); ok {
 		t.Error(s, ok)
@@ -133,6 +136,7 @@ func TestTree_Add_inc(t *testing.T) {
 	//     /   \         /   \
 	//  0,1     2,1   4,1     6,1
 	aat = aat.Add(0).Add(1).Add(2).Add(3).Add(4).Add(5).Add(6)
+	aat.check()
 
 	if n := aat; n.key != 3 || n.Level() != 3 {
 		t.Fatalf("%d,%d", n.key, n.Level())
@@ -165,6 +169,7 @@ func TestTree_Add_dec(t *testing.T) {
 	//         /   \
 	//      4,1     6,1
 	aat = aat.Add(6).Add(5).Add(4).Add(3).Add(2)
+	aat.check()
 
 	if n := aat; n.key != 3 || n.Level() != 2 {
 		t.Fatalf("%d,%d", n.key, n.Level())
@@ -209,6 +214,7 @@ func TestTree_Delete(t *testing.T) {
 	//             \
 	//              6,1
 	aat = aat.Delete(0).Delete(3).Delete(1)
+	aat.check()
 
 	if n := aat; n.key != 4 || n.Level() != 2 {
 		t.Fatalf("%d,%d", n.key, n.Level())
@@ -221,13 +227,6 @@ func TestTree_Delete(t *testing.T) {
 	}
 	if n := aat.right.right; n.key != 6 || n.Level() != 1 {
 		t.Fatalf("%d,%d", n.key, n.Level())
-	}
-
-	if a, b := aat, aat.Delete(-1); a != b {
-		t.Fatalf("%p ≠ %p", a, b)
-	}
-	if a, b := aat, aat.Delete(10); a != b {
-		t.Fatalf("%p ≠ %p", a, b)
 	}
 }
 
@@ -285,10 +284,16 @@ func TestTree_Delete_missing(t *testing.T) {
 	var aat *Tree[int, struct{}]
 	aat = aat.Add(1).Add(3).Add(5)
 
+	if a, b := aat, aat.Delete(0); a != b {
+		t.Fatalf("%p ≠ %p", a, b)
+	}
 	if a, b := aat, aat.Delete(2); a != b {
 		t.Fatalf("%p ≠ %p", a, b)
 	}
 	if a, b := aat, aat.Delete(4); a != b {
+		t.Fatalf("%p ≠ %p", a, b)
+	}
+	if a, b := aat, aat.Delete(6); a != b {
 		t.Fatalf("%p ≠ %p", a, b)
 	}
 }
@@ -298,9 +303,6 @@ func TestTree_Delete_pred(t *testing.T) {
 	aat = aat.Add(1).Add(3).Add(5)
 
 	if a, b := aat, aat.Delete(3, func(node *Tree[int, struct{}]) bool {
-		if aat != node {
-			t.Fatalf("%p ≠ %p", aat, node)
-		}
 		return false
 	}); a != b {
 		t.Fatalf("%p ≠ %p", a, b)
@@ -342,12 +344,15 @@ func BenchmarkAddDelete(b *testing.B) {
 	var aat *Tree[int, string]
 
 	r := rand.New(rand.NewSource(42))
-	n := max(16, b.N)
+	n := max(16, 16*b.N)
 
 	for range n {
 		aat = aat.Add(r.Intn(n))
 	}
 	for range n {
 		aat = aat.Delete(r.Intn(n))
+	}
+	for range 8 * n {
+		aat.Get(r.Intn(n))
 	}
 }

@@ -63,7 +63,7 @@ func increasing[K cmp.Ordered](keys []K) bool {
 // Collect collects key-value pairs from this tree
 // into a new map and returns it.
 func (tree *Tree[K, V]) Collect() map[K]V {
-	m := make(map[K]V, 1<<tree.Level())
+	m := make(map[K]V, tree.Len())
 	tree.collect(m)
 	return m
 }
