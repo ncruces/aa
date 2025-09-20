@@ -7,8 +7,8 @@ import (
 
 func TestUnion(t *testing.T) {
 	var t1, t2 *Tree[int, string]
-	t1 = t1.Put(1, "one").Put(2, "two").Put(3, "three").Put(5, "five")
-	t2 = t2.Put(0, "zero").Put(2, "").Put(4, "four")
+	t1 = t1.Put(1, "one").Put(2, "").Put(3, "three").Put(5, "five")
+	t2 = t2.Put(0, "zero").Put(2, "two").Put(4, "four")
 
 	if a := Union(t1, t1); a != t1 {
 		t.Errorf("%p ≠ %p", a, t1)
