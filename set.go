@@ -2,23 +2,23 @@ package aa
 
 import "cmp"
 
-// Union returns the set union of two trees.
-// For keys in both trees, the value from t1 is retained.
+// Union returns the set union of two trees,
+// last value wins.
 func Union[K cmp.Ordered, V any](t1, t2 *Tree[K, V]) *Tree[K, V] {
 	switch {
-	case t1 == t2 || t2 == nil:
-		return t1
-	case t1 == nil:
+	case t1 == t2 || t1 == nil:
 		return t2
+	case t2 == nil:
+		return t1
 	}
-	left, _, right := t2.Split(t1.key)
-	left = Union(t1.left, left)
-	right = Union(t1.right, right)
-	return join(left, t1, right)
+	left, _, right := t1.Split(t2.key)
+	left = Union(left, t2.left)
+	right = Union(right, t2.right)
+	return join(left, t2, right)
 }
 
-// Intersection returns the set intersection of two trees.
-// Values are taken from t1.
+// Intersection returns the set intersection of two trees,
+// first value wins.
 func Intersection[K cmp.Ordered, V any](t1, t2 *Tree[K, V]) *Tree[K, V] {
 	switch {
 	case t1 == t2:
