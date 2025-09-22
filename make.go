@@ -53,6 +53,7 @@ func makeNode[K cmp.Ordered, V any](k K, v V, left, right *Tree[K, V]) *Tree[K, 
 // Increasing tests if keys are in strictly increasing order.
 func increasing[K cmp.Ordered](keys []K) bool {
 	for i := len(keys) - 1; i > 0; i-- {
+		//nolint:nilaway
 		if !cmp.Less(keys[i-1], keys[i]) {
 			return false
 		}
