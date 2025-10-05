@@ -9,3 +9,5 @@ A [persistent](https://en.wikipedia.org/wiki/Persistent_data_structure) implemen
 ([paper](https://user.it.uu.se/~arnea/ps/simp.pdf)),
 including the [join-based tree algorithms](https://en.wikipedia.org/wiki/Join-based_tree_algorithms),
 and augmented with [order statistics](https://en.wikipedia.org/wiki/Order_statistic_tree).
+
+Weight-balanced trees turned out to be a better fit: [`github.com/ncruces/wbt`](https://github.com/ncruces/wbt).
